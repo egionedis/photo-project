@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import Image from "next/image";
 import type { Photo } from "@/lib/types";
 import { formatPhotoDate, getPhotoDisplayDateValue } from "@/lib/photo-date";
@@ -15,6 +15,9 @@ type LightboxProps = {
 };
 
 export function Lightbox({ photos, currentIndex, isOpen, onClose, onPrevious, onNext }: LightboxProps) {
+  const touchStartXRef = useRef<number | null>(null);
+  const touchStartYRef = useRef<number | null>(null);
+
   useEffect(() => {
     if (!isOpen) {
       return;
@@ -38,6 +41,22 @@ export function Lightbox({ photos, currentIndex, isOpen, onClose, onPrevious, on
     return () => window.removeEventListener("keydown", handleKeydown);
   }, [isOpen, onClose, onPrevious, onNext]);
 
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousHtmlOverflow;
+    };
+  }, [isOpen]);
+
   if (!isOpen) {
     return null;
   }
@@ -60,7 +79,61 @@ export function Lightbox({ photos, currentIndex, isOpen, onClose, onPrevious, on
   ].filter((row): row is { label: string; value: string } => Boolean(row.value));
 
   return (
-    <div className="lightbox-overlay" onClick={onClose} role="dialog" aria-modal="true" aria-label="Photo lightbox">
+    <div
+      className="lightbox-overlay"
+      onClick={onClose}
+      onTouchStart={(event) => {
+        const touch = event.touches[0];
+        if (!touch) {
+          return;
+        }
+        touchStartXRef.current = touch.clientX;
+        touchStartYRef.current = touch.clientY;
+      }}
+      onTouchEnd={(event) => {
+        const startX = touchStartXRef.current;
+        const startY = touchStartYRef.current;
+        const touch = event.changedTouches[0];
+
+        touchStartXRef.current = null;
+        touchStartYRef.current = null;
+
+        if (!touch || startX === null || startY === null) {
+          return;
+        }
+
+        const deltaX = touch.clientX - startX;
+        const deltaY = touch.clientY - startY;
+        const absX = Math.abs(deltaX);
+        const absY = Math.abs(deltaY);
+
+        // Only treat as swipe when horizontal movement is dominant.
+        if (absX < 40 || absX <= absY) {
+          return;
+        }
+
+        if (deltaX < 0) {
+          onNext();
+        } else {
+          onPrevious();
+        }
+      }}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Photo lightbox"
+    >
+      <button
+        className="lightbox-close"
+        type="button"
+        onClick={(event) => {
+          event.stopPropagation();
+          onClose();
+        }}
+        aria-label="Close photo"
+      >
+        ×
+      </button>
+
       <button
         className="lightbox-nav lightbox-nav-left"
         type="button"
