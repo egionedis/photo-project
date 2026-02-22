@@ -191,7 +191,7 @@ async function parseExifMetadata(file: File): Promise<ExifMetadata> {
       ifd0: true,
       exif: true,
       mergeOutput: true
-    } as Parameters<typeof exifr.parse>[1]
+    } as unknown as Parameters<typeof exifr.parse>[1]
   )) as
     | {
         DateTimeOriginal?: Date | string;
@@ -227,7 +227,7 @@ async function parseExifMetadata(file: File): Promise<ExifMetadata> {
         exif: true,
         xmp: true,
         mergeOutput: true
-      } as Parameters<typeof exifr.parse>[1]
+      } as unknown as Parameters<typeof exifr.parse>[1]
     )) as Record<string, unknown> | null;
 
     if (!cameraMake) {
