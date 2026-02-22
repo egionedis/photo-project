@@ -1,0 +1,1047 @@
+/*
+  GLOBAL CSS MAP (quick edit guide)
+
+  Header / navigation
+  - .site-title        -> header brand text size/style ("Edgar Gionedis")
+  - .site-nav a        -> header nav links (Gallery / About)
+  - .site-header       -> header border / backdrop
+  - .site-header .inner-> header spacing / layout
+
+  Global typography / layout
+  - body               -> site-wide font family + base font size
+  - .container         -> main max width
+  - .page              -> top/bottom spacing below header
+
+  About page
+  - .about-copy h1     -> About page title
+  - .about-paragraphs p-> About paragraph text size / line-height
+  - .about-contact     -> "Contact" + email text
+  - .about-grid        -> image/text layout
+  - .about-image       -> portrait image rendering
+
+  Gallery (justified)
+  - .justified-gallery-page
+  - .justified-gallery-grid
+  - .justified-gallery-row
+  - .justified-gallery-tile
+  - .justified-gallery-image
+
+  Lightbox
+  - .lightbox-overlay  -> fullscreen background
+  - .lightbox-content  -> modal layout (image + metadata columns)
+  - .lightbox-image-wrap / .lightbox-image
+  - .lightbox-meta h2  -> title
+  - .lightbox-date     -> date text
+  - .lightbox-description
+  - .lightbox-camera p -> camera metadata rows
+  - .lightbox-nav      -> left/right arrows
+
+  Admin pages (upload/edit/order)
+  - .admin-upload-*    -> upload page UI
+  - .admin-edit-*      -> edit page UI
+  - .admin-order-*     -> gallery order page UI
+
+  Mobile/desktop tweaks
+  - @media (max-width: 640px)   -> small header size
+  - @media (max-width: 767px)   -> mobile about/lightbox/order
+  - @media (min-width: 768px)   -> desktop about grid
+  - @media (min-width: 1024px)  -> desktop admin layouts
+*/
+:root {
+  color-scheme: light;
+  --bg: #fafafa;
+  --card: #ffffff;
+  --text: #171717;
+  --muted: #6b6b6b;
+  --line: #e5e5e5;
+  --accent: #3f6b5c;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-garamond), Garamond, "Times New Roman", serif;
+  font-size: 1.0625rem;
+  color: var(--text);
+  background: var(--bg);
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.container {
+  width: min(1600px, calc(100% - 2.5rem));
+  margin: 0 auto;
+}
+
+/* Header container (border + backdrop) */
+.site-header {
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(6px);
+}
+
+.site-header .inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 0;
+}
+
+/* Header brand title text ("Edgar Gionedis") */
+.site-title {
+  font-size: 1.25rem;
+  letter-spacing: 0.01em;
+}
+
+/* Header navigation wrapper */
+.site-nav {
+  display: flex;
+  gap: 1rem;
+}
+
+/* Header navigation links (Gallery / About) */
+.site-nav a {
+  font-size: 1.15rem;
+  color: var(--muted);
+}
+
+.site-nav a:hover {
+  color: var(--text);
+}
+
+.page {
+  padding: 2rem 0 3rem;
+}
+
+.card {
+  border: 1px solid var(--line);
+  background: var(--card);
+  border-radius: 14px;
+}
+
+.input,
+.textarea,
+.button,
+select {
+  font: inherit;
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  padding: 0.7rem 0.85rem;
+  background: #fff;
+}
+
+.textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.button {
+  cursor: pointer;
+  width: auto;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+}
+
+.button.secondary {
+  background: #efede6;
+  color: var(--text);
+}
+
+.stack {
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-upload-page {
+  width: min(1600px, 100%);
+}
+
+.admin-upload-shell {
+  width: min(1600px, 100%);
+}
+
+.admin-upload-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.admin-upload-left,
+.admin-upload-right,
+.admin-upload-success {
+  border-radius: 0;
+  border: 1px solid var(--line);
+  background: var(--card);
+  padding: 1rem;
+}
+
+.admin-upload-left,
+.admin-upload-right {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.admin-upload-hidden-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.admin-dropzone {
+  border: 1px dashed var(--line);
+  background: #fff;
+  color: var(--muted);
+  min-height: 160px;
+  padding: 1rem;
+  text-align: center;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  border-radius: 0;
+}
+
+.admin-dropzone.is-dragging {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.admin-preview-block {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.admin-preview-image {
+  width: 100%;
+  max-height: 280px;
+  object-fit: contain;
+  display: block;
+  border: 1px solid var(--line);
+}
+
+.admin-edit-shell {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.admin-edit-sidebar {
+  border-radius: 0;
+  padding: 1rem;
+  display: grid;
+  gap: 0.8rem;
+  align-self: start;
+}
+
+.admin-edit-list {
+  display: grid;
+  gap: 0.45rem;
+  max-height: 68vh;
+  overflow: auto;
+}
+
+.admin-edit-row {
+  border: 1px solid var(--line);
+  background: #fff;
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-edit-row.is-active {
+  border-color: var(--accent);
+}
+
+.admin-edit-row img {
+  width: 96px;
+  height: 72px;
+  object-fit: cover;
+  display: block;
+}
+
+.admin-edit-row span {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.admin-edit-row strong {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.admin-edit-row small {
+  color: var(--muted);
+}
+
+.admin-edit-detail {
+  border-radius: 0;
+  padding: 1rem;
+  display: grid;
+  gap: 0.9rem;
+}
+
+.admin-edit-preview {
+  border: 1px solid var(--line);
+  height: min(60vh, 640px);
+}
+
+.admin-order-dnd-shell {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.admin-order-topbar {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.7rem;
+  align-items: center;
+}
+
+.admin-order-topbar h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.admin-order-summary {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.admin-order-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 0.7rem;
+}
+
+.order-tile {
+  border: 1px solid var(--line);
+  background: #fff;
+  padding: 0.45rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.order-tile.is-dragging {
+  opacity: 0.75;
+}
+
+.order-tile-image-wrap {
+  position: relative;
+}
+
+.order-tile-image {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.order-drag-handle {
+  position: absolute;
+  right: 0.35rem;
+  bottom: 0.35rem;
+  border: 1px solid rgba(23, 23, 23, 0.2);
+  background: rgba(255, 255, 255, 0.9);
+  color: #171717;
+  font-size: 0.75rem;
+  padding: 0.2rem 0.4rem;
+  opacity: 0;
+  transition: opacity 140ms ease;
+  cursor: grab;
+}
+
+.order-tile:hover .order-drag-handle {
+  opacity: 1;
+}
+
+.order-tile h3 {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 500;
+}
+
+.order-tile p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.admin-order-unsaved {
+  color: #7a5d00;
+  font-size: 0.88rem;
+}
+
+.admin-order-list {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.admin-order-row {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr) 120px;
+  gap: 0.7rem;
+  align-items: center;
+  border: 1px solid var(--line);
+  padding: 0.45rem;
+}
+
+.admin-order-row img {
+  width: 96px;
+  height: 72px;
+  object-fit: cover;
+  display: block;
+}
+
+.admin-order-meta {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.admin-order-meta strong {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.admin-order-meta small {
+  color: var(--muted);
+}
+
+.admin-order-input {
+  width: 120px;
+  justify-self: end;
+}
+
+/* About page outer layout + width */
+.about-page {
+  width: min(1600px, calc(100% - 5rem));
+  margin: 0 auto;
+  padding: 6rem 0;
+}
+
+/* About page grid (image left / text right on desktop) */
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 5rem;
+  align-items: start;
+}
+
+/* About portrait wrapper */
+.about-image-wrap {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+
+/* About portrait image */
+.about-image {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* About text column */
+.about-copy {
+  max-width: 42rem;
+}
+
+/* About page title */
+.about-copy h1 {
+  margin: 0 0 2rem;
+  font-size: clamp(1.9rem, 4vw, 2.3rem);
+  font-weight: 500;
+  color: #171717;
+}
+
+/* About paragraph stack */
+.about-paragraphs {
+  display: grid;
+  gap: 1.5rem;
+}
+
+/* About paragraph text (main readable copy) */
+.about-paragraphs p {
+  margin: 0;
+  color: #404040;
+  font-size: 1.2rem;
+  line-height: 1.85;
+}
+
+/* About contact block ("Contact" + email) */
+.about-contact {
+  margin: 2.5rem 0 0;
+  color: #737373;
+  font-size: 1.2rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 640px) {
+  .site-title {
+    font-size: 1.08rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .admin-upload-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .admin-edit-shell {
+    grid-template-columns: 320px minmax(0, 1fr);
+  }
+
+  .admin-edit-sidebar {
+    position: sticky;
+    top: 5.6rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .admin-order-topbar {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-order-row {
+    grid-template-columns: 96px minmax(0, 1fr);
+  }
+
+  .admin-order-input {
+    width: 100%;
+    justify-self: stretch;
+    grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 960px) {
+  .admin-order-topbar {
+    grid-template-columns: minmax(280px, 1fr) minmax(280px, 1fr) auto auto;
+  }
+}
+
+.places-shell {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.places-hero {
+  position: relative;
+  height: min(72vh, 760px);
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  border-radius: 0;
+  overflow: hidden;
+}
+
+.places-hero-image {
+  object-fit: cover;
+  filter: saturate(0.88) contrast(1.04);
+}
+
+.places-hero-overlay {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 2rem 1.5rem;
+  color: #f7f3eb;
+  background: linear-gradient(to top, rgba(12, 12, 12, 0.65), rgba(12, 12, 12, 0.05));
+}
+
+.places-hero-overlay p {
+  margin: 0 0 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.8rem;
+}
+
+.places-hero-overlay h1 {
+  margin: 0;
+  font-size: clamp(1.9rem, 4vw, 3rem);
+}
+
+.places-toolbar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.places-grid {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 1.25rem;
+}
+
+.timeline-mobile {
+  display: none;
+}
+
+.timeline-nav {
+  position: sticky;
+  top: 5.4rem;
+  align-self: start;
+  max-height: calc(100vh - 6.5rem);
+  overflow: auto;
+  padding-right: 0.5rem;
+}
+
+.timeline-group {
+  margin-bottom: 1.1rem;
+}
+
+.timeline-group h3 {
+  margin: 0 0 0.5rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.timeline-group-list {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.timeline-item {
+  appearance: none;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  padding: 0.3rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--muted);
+}
+
+.timeline-dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  border: 1px solid #8d948f;
+  background: transparent;
+  transition: transform 220ms ease, background-color 220ms ease, border-color 220ms ease;
+}
+
+.timeline-label {
+  line-height: 1.2;
+  font-size: 0.92rem;
+}
+
+.timeline-item.is-active {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.timeline-item.is-active .timeline-dot {
+  background: var(--accent);
+  border-color: var(--accent);
+  transform: scale(1.22);
+}
+
+.places-sections {
+  position: relative;
+}
+
+.places-sections.snap-enabled {
+  scroll-snap-type: y mandatory;
+}
+
+.places-sticky-frame {
+  position: sticky;
+  top: 5.4rem;
+  height: calc(100vh - 7rem);
+  margin-bottom: 1.2rem;
+}
+
+.places-frame-inner {
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  background: #151515;
+}
+
+.places-frame-photo {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transform: scale(1.055) rotate(-0.65deg);
+  transition: opacity 500ms ease, transform 640ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.places-frame-photo.is-active {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+}
+
+.places-frame-image {
+  object-fit: cover;
+}
+
+.places-frame-caption {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 1rem 1rem 1.1rem;
+  color: #f6f6f6;
+  background: linear-gradient(to top, rgba(6, 6, 6, 0.76), rgba(6, 6, 6, 0.08));
+}
+
+.places-frame-caption p {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.places-frame-caption h2 {
+  margin: 0.2rem 0;
+  font-size: clamp(1.05rem, 2vw, 1.45rem);
+}
+
+.places-section {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  scroll-snap-align: start;
+}
+
+.places-section-content {
+  width: min(620px, 100%);
+  margin-left: auto;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.places-section-content h3 {
+  margin: 0.15rem 0 0.45rem;
+}
+
+.places-section-content p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+@media (max-width: 1024px) {
+  .places-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .timeline-nav {
+    display: none;
+  }
+
+  .timeline-mobile {
+    display: flex;
+    gap: 0.55rem;
+    overflow-x: auto;
+    position: sticky;
+    top: 4.6rem;
+    z-index: 3;
+    padding: 0.35rem 0;
+    background: rgba(248, 247, 242, 0.88);
+    backdrop-filter: blur(4px);
+  }
+
+  .timeline-mobile-item {
+    appearance: none;
+    border: 1px solid var(--line);
+    background: #fff;
+    color: var(--muted);
+    border-radius: 999px;
+    padding: 0.35rem 0.65rem;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  .timeline-mobile-item.is-active {
+    border-color: var(--accent);
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .places-sticky-frame {
+    top: 8.2rem;
+    height: 52vh;
+  }
+
+  .places-section {
+    min-height: 70vh;
+  }
+
+  .places-section-content {
+    margin-left: 0;
+  }
+}
+
+.gallery-justified-page {
+  width: min(1600px, calc(100% - 3rem));
+  margin: 0 auto;
+  padding: 3rem 0;
+}
+
+.gallery-title {
+  margin: 0 0 1.5rem;
+}
+
+.gallery-justified-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+}
+
+.gallery-row-fragment {
+  display: contents;
+}
+
+.gallery-row-break {
+  flex-basis: 100%;
+  width: 0;
+  height: 0;
+}
+
+.gallery-justified-tile {
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  flex: 0 0 auto;
+  overflow: hidden;
+}
+
+.gallery-justified-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #f2f0ea;
+  transition: opacity 180ms ease;
+  display: block;
+}
+
+.gallery-justified-tile:hover .gallery-justified-image {
+  opacity: 0.9;
+}
+
+/* Public gallery page wrapper */
+.justified-gallery-page {
+  width: 100%;
+  margin: 0;
+  padding: 1.25rem 0 0;
+}
+
+/* Justified row layout wrapper (rows fill total width) */
+.justified-gallery-grid {
+  display: grid;
+  gap: 0.375rem;
+}
+
+/* One gallery row */
+.justified-gallery-row {
+  display: flex;
+  gap: 0.375rem;
+}
+
+/* Clickable photo tile */
+.justified-gallery-tile {
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  overflow: hidden;
+  text-align: left;
+  display: block;
+  flex: 0 0 auto;
+}
+
+/* Tile frame fills computed row height */
+.justified-gallery-tile-frame {
+  position: relative;
+  overflow: hidden;
+  background: transparent;
+  width: 100%;
+  height: 100%;
+}
+
+/* Gallery image element */
+.justified-gallery-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: opacity 180ms ease;
+}
+
+.justified-gallery-tile:hover .justified-gallery-image {
+  opacity: 0.9;
+}
+
+/* Fullscreen lightbox overlay background */
+.lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  animation: lightbox-fade-in 140ms ease-out;
+}
+
+/* Lightbox modal layout (image + metadata columns) */
+.lightbox-content {
+  width: min(92vw, 1500px);
+  max-height: 90vh;
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(260px, 3fr);
+  gap: 1.25rem;
+  align-items: center;
+  position: relative;
+}
+
+/* Lightbox image panel wrapper */
+.lightbox-image-wrap {
+  position: relative;
+  width: 100%;
+  height: min(90vh, 900px);
+  max-height: 90vh;
+}
+
+/* Lightbox image rendering */
+.lightbox-image {
+  object-fit: contain;
+}
+
+/* Lightbox left/right navigation arrows */
+.lightbox-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 3rem;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+  transition: color 140ms ease;
+}
+
+.lightbox-nav:hover {
+  color: #fff;
+}
+
+.lightbox-nav-left {
+  left: 1rem;
+}
+
+.lightbox-nav-right {
+  right: 1rem;
+}
+
+/* Lightbox metadata panel */
+.lightbox-meta {
+  width: 100%;
+  align-self: center;
+}
+
+/* Lightbox photo title */
+.lightbox-meta h2 {
+  margin: 0;
+  color: #fff;
+  font-size: 1.125rem;
+  font-weight: 500;
+}
+
+/* Lightbox date text */
+.lightbox-date {
+  margin: 0.5rem 0 0;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.875rem;
+}
+
+/* Lightbox description text */
+.lightbox-description {
+  margin: 0.75rem 0 0;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.6;
+}
+
+/* Lightbox camera metadata list */
+.lightbox-camera {
+  margin-top: 0.75rem;
+  display: grid;
+  gap: 0.2rem;
+}
+
+/* Lightbox camera metadata row */
+.lightbox-camera p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 767px) {
+  .about-page {
+    width: min(1600px, calc(100% - 2rem));
+    padding: 3rem 0;
+  }
+
+  .justified-gallery-page {
+    padding: 0.5rem 0 0;
+  }
+
+  .gallery-justified-page {
+    width: min(72rem, calc(100% - 2rem));
+    padding: 2.25rem 0;
+  }
+
+  .lightbox-content {
+    width: 100%;
+    max-height: 90vh;
+    grid-template-columns: 1fr;
+    gap: 0.9rem;
+  }
+
+  .lightbox-image-wrap {
+    height: min(66vh, 520px);
+  }
+
+  .lightbox-nav {
+    font-size: 2.4rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .about-grid {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  }
+
+  .about-image-wrap {
+    width: 100%;
+  }
+}
+
+@media (max-width: 639px) {
+  .justified-gallery-row {
+    gap: 0.375rem;
+  }
+}
+
+@keyframes lightbox-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
