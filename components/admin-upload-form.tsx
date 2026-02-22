@@ -169,27 +169,30 @@ function formatAperture(value: number | string | undefined): string | undefined 
 }
 
 async function parseExifMetadata(file: File): Promise<ExifMetadata> {
-  const exifData = (await exifr.parse(file, {
-    pick: [
-      "DateTimeOriginal",
-      "CreateDate",
-      "ModifyDate",
-      "Make",
-      "Model",
-      "CameraModelName",
-      "UniqueCameraModel",
-      "LensModel",
-      "Lens",
-      "FocalLength",
-      "FNumber",
-      "ExposureTime",
-      "ISO"
-    ],
-    tiff: true,
-    ifd0: true,
-    exif: true,
-    mergeOutput: true
-  })) as
+  const exifData = (await exifr.parse(
+    file,
+    {
+      pick: [
+        "DateTimeOriginal",
+        "CreateDate",
+        "ModifyDate",
+        "Make",
+        "Model",
+        "CameraModelName",
+        "UniqueCameraModel",
+        "LensModel",
+        "Lens",
+        "FocalLength",
+        "FNumber",
+        "ExposureTime",
+        "ISO"
+      ],
+      tiff: true,
+      ifd0: true,
+      exif: true,
+      mergeOutput: true
+    } as Parameters<typeof exifr.parse>[1]
+  )) as
     | {
         DateTimeOriginal?: Date | string;
         CreateDate?: Date | string;
@@ -216,13 +219,16 @@ async function parseExifMetadata(file: File): Promise<ExifMetadata> {
 
   // Fallback: parse full EXIF and search keys case-insensitively, including nested IFD/XMP shapes.
   if (!cameraMake || !cameraModel) {
-    const fullExif = (await exifr.parse(file, {
-      tiff: true,
-      ifd0: true,
-      exif: true,
-      xmp: true,
-      mergeOutput: true
-    })) as Record<string, unknown> | null;
+    const fullExif = (await exifr.parse(
+      file,
+      {
+        tiff: true,
+        ifd0: true,
+        exif: true,
+        xmp: true,
+        mergeOutput: true
+      } as Parameters<typeof exifr.parse>[1]
+    )) as Record<string, unknown> | null;
 
     if (!cameraMake) {
       cameraMake =
