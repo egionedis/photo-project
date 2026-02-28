@@ -164,6 +164,7 @@ export function JustifiedGallery({ photos }: JustifiedGalleryProps) {
   }, []);
 
   const rows = useMemo(() => buildRows(photos, containerWidth), [photos, containerWidth]);
+  const isMobile = containerWidth > 0 && containerWidth < 640;
 
   function openLightbox(index: number) {
     setCurrentIndex(index);
@@ -192,32 +193,56 @@ export function JustifiedGallery({ photos }: JustifiedGalleryProps) {
 
   return (
     <section className="justified-gallery-page">
-      <div className="justified-gallery-grid" ref={containerRef}>
-        {rows.map((row, rowIndex) => (
-          <div key={`row-${rowIndex}`} className="justified-gallery-row" style={{ height: `${row.height}px` }}>
-            {row.items.map((item) => (
-              <button
-                key={item.photo.publicId}
-                type="button"
-                className="justified-gallery-tile"
-                style={{ width: `${item.width}px` }}
-                onClick={() => openLightbox(item.index)}
-                aria-label={`Open ${item.photo.title}`}
-              >
-                <div className="justified-gallery-tile-frame">
-                  <Image
-                    src={item.photo.secureUrl}
-                    alt={item.photo.title}
-                    fill
-                    sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 33vw"
-                    className="justified-gallery-image"
-                  />
-                </div>
-              </button>
-            ))}
-          </div>
-        ))}
-      </div>
+      {isMobile ? (
+        <div className="justified-gallery-flex" ref={containerRef}>
+          {photos.map((photo, index) => (
+            <button
+              key={photo.publicId}
+              type="button"
+              className="justified-gallery-tile"
+              style={
+                {
+                  ["--w" as any]: photo.width || 1,
+                  ["--h" as any]: photo.height || 1
+                } as React.CSSProperties
+              }
+              onClick={() => openLightbox(index)}
+              aria-label={`Open ${photo.title}`}
+            >
+              <div className="justified-gallery-tile-frame">
+                <Image src={photo.secureUrl} alt={photo.title} fill sizes="100vw" className="justified-gallery-image" />
+              </div>
+            </button>
+          ))}
+        </div>
+      ) : (
+        <div className="justified-gallery-grid" ref={containerRef}>
+          {rows.map((row, rowIndex) => (
+            <div key={`row-${rowIndex}`} className="justified-gallery-row" style={{ height: `${row.height}px` }}>
+              {row.items.map((item) => (
+                <button
+                  key={item.photo.publicId}
+                  type="button"
+                  className="justified-gallery-tile"
+                  style={{ width: `${item.width}px` }}
+                  onClick={() => openLightbox(item.index)}
+                  aria-label={`Open ${item.photo.title}`}
+                >
+                  <div className="justified-gallery-tile-frame">
+                    <Image
+                      src={item.photo.secureUrl}
+                      alt={item.photo.title}
+                      fill
+                      sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 33vw"
+                      className="justified-gallery-image"
+                    />
+                  </div>
+                </button>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
 
       <Lightbox
         photos={photos}

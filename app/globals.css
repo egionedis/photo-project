@@ -884,6 +884,46 @@ select {
   opacity: 0.9;
 }
 
+/* MOBILE: CSS-only justified wrap (astro-photo-grid style) */
+.justified-gallery-flex {
+  --padding: max(2.5vw, 12px);
+  --space: max(2.5vw, 12px);
+  --min-height: clamp(200px, 20vw, 400px);
+
+  padding: var(--padding);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space);
+}
+
+/* pushes the last row so it doesn't stretch weirdly */
+.justified-gallery-flex::after {
+  content: "";
+  flex-grow: 1000000000;
+}
+
+.justified-gallery-flex .justified-gallery-tile {
+  /* override desktop row rules */
+  flex: 1 1 auto;
+
+  /* CSS vars set per-photo in React */
+  flex-grow: calc(var(--w) * (100000 / var(--h)));
+  flex-basis: calc(var(--min-height) * (var(--w) / var(--h)));
+  aspect-ratio: var(--w) / var(--h);
+}
+
+.justified-gallery-flex .justified-gallery-tile-frame {
+  height: 100%;
+}
+
+@media (max-width: 639px) {
+  .justified-gallery-flex {
+    --padding: max(2vw, 8px);
+    --space: max(2vw, 8px);
+    --min-height: clamp(90px, 24vw, 160px);
+  }
+}
+
 /* Fullscreen lightbox overlay background */
 .lightbox-overlay {
   position: fixed;
@@ -986,14 +1026,14 @@ select {
 
 /* Lightbox date text */
 .lightbox-date {
-  margin: 0.5rem 0 0;
+  margin: 0.1rem 0 0;
   color: rgba(255, 255, 255, 0.6);
   font-size: 1.1rem;
 }
 
 /* Lightbox description text */
 .lightbox-description {
-  margin: 0.75rem 0 0;
+  margin: 1.6rem 0 0;
   color: rgba(255, 255, 255, 0.8);
   line-height: 1.6;
   font-size: 1.2rem;
@@ -1001,7 +1041,7 @@ select {
 
 /* Lightbox camera metadata list */
 .lightbox-camera {
-  margin-top: 0.75rem;
+  margin-top: 1.8rem;
   display: grid;
   gap: 0.2rem;
 }
@@ -1061,18 +1101,18 @@ select {
   }
 
   .lightbox-date {
-    margin-top: 0.25rem;
+    margin-top: 0.08rem;
     font-size: 1rem;
   }
 
   .lightbox-description {
-    margin-top: 0.4rem;
+    margin-top: 1rem;
     font-size: 1.05rem;
     line-height: 1.65;
   }
 
   .lightbox-camera {
-    margin-top: 0.4rem;
+    margin-top: 1.25rem;
     gap: 0.08rem;
   }
 
