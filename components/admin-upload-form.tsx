@@ -168,6 +168,17 @@ function formatAperture(value: number | string | undefined): string | undefined 
   return `f/${numeric.toFixed(1)}`;
 }
 
+function formatFocalLength(value: number | string | undefined): string | undefined {
+  if (value === undefined || value === null || value === "") {
+    return undefined;
+  }
+  const numeric = typeof value === "number" ? value : Number(String(value).replace(",", "."));
+  if (Number.isNaN(numeric) || !Number.isFinite(numeric)) {
+    return undefined;
+  }
+  return `${numeric.toFixed(2)}mm`;
+}
+
 async function parseExifMetadata(file: File): Promise<ExifMetadata> {
   const exifData = (await exifr.parse(
     file,
@@ -261,8 +272,7 @@ async function parseExifMetadata(file: File): Promise<ExifMetadata> {
     }
   }
 
-  const focalLength =
-    exifData?.FocalLength !== undefined && exifData.FocalLength !== null ? `${exifData.FocalLength}mm` : undefined;
+  const focalLength = formatFocalLength(exifData?.FocalLength);
   const aperture = formatAperture(exifData?.FNumber);
 
   return {

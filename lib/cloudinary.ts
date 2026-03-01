@@ -63,6 +63,28 @@ function normalizeAperture(value: string | undefined): string | undefined {
   return `f/${numeric.toFixed(1)}`;
 }
 
+function normalizeFocalLength(value: string | undefined | null): string | undefined {
+  if (!value) {
+    return undefined;
+  }
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return undefined;
+  }
+
+  const numericMatch = trimmed.match(/-?\d+(?:[.,]\d+)?/);
+  if (!numericMatch) {
+    return trimmed;
+  }
+
+  const parsed = Number(numericMatch[0].replace(",", "."));
+  if (!Number.isFinite(parsed)) {
+    return trimmed;
+  }
+
+  return `${parsed.toFixed(2)}mm`;
+}
+
 function normalizeTags(tags: string[] | string | undefined): string[] {
   return normalizeTagList(tags);
 }
@@ -85,7 +107,7 @@ function mapResourceToPhoto(resource: CloudinaryResource): Photo {
     make: context.camera_make?.trim() || undefined,
     model: context.camera_model?.trim() || undefined,
     lens: context.lens_model?.trim() || undefined,
-    focalLength: context.focal_length?.trim() || undefined,
+    focalLength: normalizeFocalLength(context.focal_length),
     aperture: normalizeAperture(context.aperture?.trim()),
     shutter: context.shutter?.trim() || undefined,
     iso: context.iso?.trim() || undefined
@@ -168,6 +190,7 @@ export async function updatePhotoMetadata(fields: {
   description: string;
   tags?: string[];
   sortOrder?: number | null;
+  takenAt?: string | null;
   cameraMake?: string | null;
   cameraModel?: string | null;
   lensModel?: string | null;
@@ -192,6 +215,9 @@ export async function updatePhotoMetadata(fields: {
   if (fields.sortOrder !== undefined) {
     nextContextFields.sort_order = fields.sortOrder === null ? undefined : fields.sortOrder.toString();
   }
+  if (fields.takenAt !== undefined) {
+    nextContextFields.taken_at = fields.takenAt === null ? undefined : fields.takenAt;
+  }
   if (fields.cameraMake !== undefined) {
     nextContextFields.camera_make = fields.cameraMake === null ? undefined : fields.cameraMake;
   }
@@ -202,7 +228,7 @@ export async function updatePhotoMetadata(fields: {
     nextContextFields.lens_model = fields.lensModel === null ? undefined : fields.lensModel;
   }
   if (fields.focalLength !== undefined) {
-    nextContextFields.focal_length = fields.focalLength === null ? undefined : fields.focalLength;
+    nextContextFields.focal_length = fields.focalLength === null ? undefined : normalizeFocalLength(fields.focalLength);
   }
   if (fields.aperture !== undefined) {
     nextContextFields.aperture = fields.aperture === null ? undefined : fields.aperture;

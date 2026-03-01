@@ -11,6 +11,32 @@ type AdminEditPhotosProps = {
   photos: Photo[];
 };
 
+function toDateInputValue(value: string | undefined): string {
+  if (!value) {
+    return "";
+  }
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return "";
+  }
+  const year = parsed.getFullYear();
+  const month = String(parsed.getMonth() + 1).padStart(2, "0");
+  const day = String(parsed.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function fromDateInputValue(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return "";
+  }
+  const parsed = new Date(`${trimmed}T12:00:00`);
+  if (Number.isNaN(parsed.getTime())) {
+    return "";
+  }
+  return parsed.toISOString();
+}
+
 function getCameraRows(photo: Photo): Array<{ label: string; value: string }> {
   const camera = photo.camera;
   if (!camera) {
@@ -47,6 +73,7 @@ export function AdminEditPhotos({ photos }: AdminEditPhotosProps) {
   const [title, setTitle] = useState(photos[0]?.title || "");
   const [description, setDescription] = useState(photos[0]?.description || "");
   const [tagsInput, setTagsInput] = useState((photos[0]?.tags || []).join(", "));
+  const [takenAtInput, setTakenAtInput] = useState(toDateInputValue(photos[0]?.takenAt));
   const [cameraModel, setCameraModel] = useState(photos[0]?.camera?.model || "");
   const [lensModel, setLensModel] = useState(photos[0]?.camera?.lens || "");
   const [focalLength, setFocalLength] = useState(photos[0]?.camera?.focalLength || "");
@@ -82,6 +109,7 @@ export function AdminEditPhotos({ photos }: AdminEditPhotosProps) {
     setTitle(photo.title);
     setDescription(photo.description);
     setTagsInput(photo.tags.join(", "));
+    setTakenAtInput(toDateInputValue(photo.takenAt));
     setCameraModel(photo.camera?.model || "");
     setLensModel(photo.camera?.lens || "");
     setFocalLength(photo.camera?.focalLength || "");
@@ -106,6 +134,7 @@ export function AdminEditPhotos({ photos }: AdminEditPhotosProps) {
     setSaved("");
 
     try {
+      const normalizedTakenAt = fromDateInputValue(takenAtInput);
       const response = await fetch("/api/cloudinary/update", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -114,6 +143,7 @@ export function AdminEditPhotos({ photos }: AdminEditPhotosProps) {
           title: title.trim(),
           description: description.trim(),
           tags: normalizeTagsInput(tagsInput).join(","),
+          takenAt: takenAtInput,
           cameraModel,
           lensModel,
           focalLength,
@@ -135,6 +165,7 @@ export function AdminEditPhotos({ photos }: AdminEditPhotosProps) {
                 title: title.trim(),
                 description: description.trim(),
                 tags: normalizeTagsInput(tagsInput),
+                takenAt: normalizedTakenAt || undefined,
                 camera: {
                   model: cameraModel.trim() || undefined,
                   lens: lensModel.trim() || undefined,
@@ -187,6 +218,7 @@ export function AdminEditPhotos({ photos }: AdminEditPhotosProps) {
         setTitle(next.title);
         setDescription(next.description);
         setTagsInput(next.tags.join(", "));
+        setTakenAtInput(toDateInputValue(next.takenAt));
         setCameraModel(next.camera?.model || "");
         setLensModel(next.camera?.lens || "");
         setFocalLength(next.camera?.focalLength || "");
@@ -198,6 +230,7 @@ export function AdminEditPhotos({ photos }: AdminEditPhotosProps) {
         setTitle("");
         setDescription("");
         setTagsInput("");
+        setTakenAtInput("");
         setCameraModel("");
         setLensModel("");
         setFocalLength("");
@@ -289,6 +322,11 @@ export function AdminEditPhotos({ photos }: AdminEditPhotosProps) {
               value={tagsInput}
               onChange={(event) => setTagsInput(event.target.value)}
             />
+          </label>
+
+          <label className="stack" style={{ gap: "0.35rem" }}>
+            Date taken (optional)
+            <input className="input" type="date" value={takenAtInput} onChange={(event) => setTakenAtInput(event.target.value)} />
           </label>
 
           <div className="stack" style={{ gap: "0.5rem" }}>
