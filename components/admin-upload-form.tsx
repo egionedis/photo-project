@@ -449,6 +449,15 @@ export function AdminUploadForm() {
       }
 
       const uploaded = (await uploadResponse.json()) as { public_id: string };
+      const completeResponse = await fetch("/api/cloudinary/upload-complete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ publicId: uploaded.public_id })
+      });
+      if (!completeResponse.ok) {
+        console.error("Upload succeeded but snapshot refresh failed.", completeResponse.status);
+      }
+
       setSuccess({
         publicId: uploaded.public_id,
         href: toPhotoHref(uploaded.public_id)

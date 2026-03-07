@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getAdminSessionFromCookies, isValidAdminSessionToken } from "@/lib/auth";
-import { batchUpdatePhotoSortOrder } from "@/lib/cloudinary";
+import { batchUpdatePhotoSortOrder, rebuildGallerySnapshot } from "@/lib/cloudinary";
 
 const itemSchema = z.object({
   publicId: z.string().min(1),
@@ -37,6 +37,7 @@ export async function POST(request: Request) {
   for (const part of chunks) {
     await batchUpdatePhotoSortOrder(part);
   }
+  await rebuildGallerySnapshot();
 
   revalidatePath("/gallery");
   revalidatePath("/admin/order");

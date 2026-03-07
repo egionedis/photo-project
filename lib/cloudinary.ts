@@ -1,4 +1,5 @@
 import { v2 as cloudinary } from "cloudinary";
+import { get, put } from "@vercel/blob";
 import { unstable_cache } from "next/cache";
 import { CLOUDINARY_FOLDER } from "@/lib/constants";
 import { env } from "@/lib/env";
@@ -9,6 +10,7 @@ import { normalizeTagList } from "@/lib/tags";
 import type { Photo } from "@/lib/types";
 
 const PHOTO_FOLDER = CLOUDINARY_FOLDER;
+const GALLERY_SNAPSHOT_PATH = "gallery/gallery-snapshot.json";
 
 cloudinary.config({
   cloud_name: env.cloudinaryCloudName,
@@ -34,6 +36,26 @@ type CloudinarySearchResult = {
   resources: CloudinaryResource[];
   next_cursor?: string;
 };
+
+type CloudinaryApiError = {
+  error?: {
+    message?: string;
+    http_code?: number;
+  };
+};
+
+function isCloudinaryRateLimitError(error: unknown): boolean {
+  if (!error || typeof error !== "object") {
+    return false;
+  }
+  const maybeCloudinaryError = error as CloudinaryApiError;
+  const code = maybeCloudinaryError.error?.http_code;
+  return code === 420 || code === 429;
+}
+
+function hasBlobToken(): boolean {
+  return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+}
 
 function getContextMap(resource: CloudinaryResource): Record<string, string> {
   const raw = resource.context;
@@ -143,7 +165,13 @@ function mapResourceToPhoto(resource: CloudinaryResource): Photo {
 }
 
 async function queryGalleryPhotos(): Promise<Photo[]> {
-  return queryAllPhotosInFolder();
+  const snapshot = await readGallerySnapshot();
+  if (snapshot) {
+    return snapshot;
+  }
+
+  const rebuilt = await rebuildGallerySnapshot();
+  return rebuilt;
 }
 
 async function queryAllPhotosInFolder(): Promise<Photo[]> {
@@ -162,20 +190,66 @@ async function queryAllPhotosInFolder(): Promise<Photo[]> {
       search = search.next_cursor(nextCursor);
     }
 
-    const result = (await search.execute()) as CloudinarySearchResult;
-    resources.push(...(result.resources ?? []));
-    nextCursor = result.next_cursor;
+    try {
+      const result = (await search.execute()) as CloudinarySearchResult;
+      resources.push(...(result.resources ?? []));
+      nextCursor = result.next_cursor;
+    } catch (error) {
+      if (isCloudinaryRateLimitError(error)) {
+        console.error("Cloudinary rate limit reached while fetching photos.");
+        break;
+      }
+      throw error;
+    }
   } while (nextCursor);
 
   return resources.map(mapResourceToPhoto);
 }
 
-const cachedGalleryPhotos = unstable_cache(queryGalleryPhotos, ["gallery-photos"], {
-  revalidate: 60
-});
+async function readGallerySnapshot(): Promise<Photo[] | null> {
+  if (!hasBlobToken()) {
+    return null;
+  }
+
+  try {
+    const result = await get(GALLERY_SNAPSHOT_PATH, { access: "private" });
+    if (!result || !result.stream) {
+      return null;
+    }
+
+    const raw = await new Response(result.stream).text();
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) {
+      return null;
+    }
+    return parsed as Photo[];
+  } catch (error) {
+    console.error("Failed to read gallery snapshot from Blob.", error);
+    return null;
+  }
+}
+
+async function writeGallerySnapshot(photos: Photo[]): Promise<void> {
+  if (!hasBlobToken()) {
+    return;
+  }
+
+  await put(GALLERY_SNAPSHOT_PATH, JSON.stringify(photos), {
+    access: "private",
+    addRandomSuffix: false,
+    allowOverwrite: true,
+    contentType: "application/json"
+  });
+}
+
+export async function rebuildGallerySnapshot(): Promise<Photo[]> {
+  const photos = sortPhotosForGallery(await queryAllPhotosInFolder());
+  await writeGallerySnapshot(photos);
+  return photos;
+}
 
 export async function getGalleryPhotos(): Promise<Photo[]> {
-  const photos = await cachedGalleryPhotos();
+  const photos = await queryGalleryPhotos();
   return sortPhotosForGallery(photos);
 }
 
@@ -301,7 +375,23 @@ export async function searchPhotosForAdminOrder(options: {
   offset: number;
   limit: number;
 }): Promise<{ photos: Photo[]; total: number }> {
-  const all = await queryAllPhotosInFolder();
+  let all: Photo[] = [];
+  try {
+    const snapshot = await readGallerySnapshot();
+    if (snapshot) {
+      all = snapshot;
+    } else if (hasBlobToken()) {
+      all = await rebuildGallerySnapshot();
+    } else {
+      all = await queryAllPhotosInFolder();
+    }
+  } catch (error) {
+    if (isCloudinaryRateLimitError(error)) {
+      console.error("Cloudinary rate limit reached while fetching admin ordering photos.");
+    } else {
+      throw error;
+    }
+  }
   const normalizedQuery = options.query.trim().toLowerCase();
   const filtered = normalizedQuery
     ? all.filter((photo) => {

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getAdminSessionFromCookies, isValidAdminSessionToken } from "@/lib/auth";
-import { updatePhotoMetadata } from "@/lib/cloudinary";
+import { rebuildGallerySnapshot, updatePhotoMetadata } from "@/lib/cloudinary";
 import { normalizeTagsInput } from "@/lib/tags";
 
 const schema = z.object({
@@ -55,6 +55,7 @@ export async function POST(request: Request) {
     shutter: data.shutter !== undefined ? (data.shutter.trim() || null) : undefined,
     iso: data.iso !== undefined ? (data.iso.trim() || null) : undefined
   });
+  await rebuildGallerySnapshot();
 
   revalidatePath("/gallery");
   revalidatePath(toPhotoPath(data.publicId));

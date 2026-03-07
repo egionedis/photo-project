@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getAdminSessionFromCookies, isValidAdminSessionToken } from "@/lib/auth";
-import { deletePhotoByPublicId, rebuildGallerySnapshot } from "@/lib/cloudinary";
+import { rebuildGallerySnapshot } from "@/lib/cloudinary";
 
 const schema = z.object({
   publicId: z.string().min(1)
@@ -27,11 +27,10 @@ export async function POST(request: Request) {
   }
 
   const { publicId } = parsed.data;
-  await deletePhotoByPublicId(publicId);
   await rebuildGallerySnapshot();
 
   revalidatePath("/gallery");
-  revalidatePath("/admin/edit");
+  revalidatePath("/admin/upload");
   revalidatePath(toPhotoPath(publicId));
 
   return NextResponse.json({ ok: true });
