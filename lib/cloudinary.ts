@@ -30,6 +30,11 @@ type CloudinaryResource = {
   tags?: string[];
 };
 
+type CloudinarySearchResult = {
+  resources: CloudinaryResource[];
+  next_cursor?: string;
+};
+
 function getContextMap(resource: CloudinaryResource): Record<string, string> {
   const raw = resource.context;
   if (!raw) {
@@ -138,15 +143,31 @@ function mapResourceToPhoto(resource: CloudinaryResource): Photo {
 }
 
 async function queryGalleryPhotos(): Promise<Photo[]> {
-  const result = await cloudinary.search
-    .expression(`folder="${PHOTO_FOLDER}"`)
-    .sort_by("uploaded_at", "desc")
-    .max_results(100)
-    .with_field("context")
-    .with_field("tags")
-    .execute();
+  return queryAllPhotosInFolder();
+}
 
-  return (result.resources as CloudinaryResource[]).map(mapResourceToPhoto);
+async function queryAllPhotosInFolder(): Promise<Photo[]> {
+  const resources: CloudinaryResource[] = [];
+  let nextCursor: string | undefined;
+
+  do {
+    let search = cloudinary.search
+      .expression(`folder="${PHOTO_FOLDER}"`)
+      .sort_by("uploaded_at", "desc")
+      .max_results(500)
+      .with_field("context")
+      .with_field("tags");
+
+    if (nextCursor) {
+      search = search.next_cursor(nextCursor);
+    }
+
+    const result = (await search.execute()) as CloudinarySearchResult;
+    resources.push(...(result.resources ?? []));
+    nextCursor = result.next_cursor;
+  } while (nextCursor);
+
+  return resources.map(mapResourceToPhoto);
 }
 
 const cachedGalleryPhotos = unstable_cache(queryGalleryPhotos, ["gallery-photos"], {
@@ -280,15 +301,7 @@ export async function searchPhotosForAdminOrder(options: {
   offset: number;
   limit: number;
 }): Promise<{ photos: Photo[]; total: number }> {
-  const result = await cloudinary.search
-    .expression(`folder="${PHOTO_FOLDER}"`)
-    .sort_by("uploaded_at", "desc")
-    .max_results(500)
-    .with_field("context")
-    .with_field("tags")
-    .execute();
-
-  const all = (result.resources as CloudinaryResource[]).map(mapResourceToPhoto);
+  const all = await queryAllPhotosInFolder();
   const normalizedQuery = options.query.trim().toLowerCase();
   const filtered = normalizedQuery
     ? all.filter((photo) => {
