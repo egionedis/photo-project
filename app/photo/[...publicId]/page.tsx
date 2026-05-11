@@ -50,15 +50,6 @@ export default async function PhotoDetailPage({ params }: PhotoPageProps) {
     notFound();
   }
 
-  const cameraRows = [
-    { label: "Camera", value: photo.camera?.model },
-    { label: "Lens", value: photo.camera?.lens },
-    { label: "Focal length", value: photo.camera?.focalLength },
-    { label: "Aperture", value: photo.camera?.aperture },
-    { label: "Shutter", value: photo.camera?.shutter },
-    { label: "ISO", value: photo.camera?.iso }
-  ].filter((row): row is { label: string; value: string } => Boolean(row.value));
-
   return (
     <article className="stack" style={{ gap: "1.2rem" }}>
       <h1 style={{ margin: 0 }}>{photo.title}</h1>
@@ -77,11 +68,6 @@ export default async function PhotoDetailPage({ params }: PhotoPageProps) {
         <p>
           <strong>Date:</strong> {formatPhotoDate(getPhotoDisplayDateValue(photo))}
         </p>
-        {cameraRows.map((row) => (
-          <p key={row.label}>
-            <strong>{row.label}:</strong> {row.value}
-          </p>
-        ))}
         <p style={{ marginBottom: 0 }}>
           <strong>Tags:</strong> {photo.tags.length ? photo.tags.join(", ") : "None"}
         </p>

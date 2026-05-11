@@ -33,7 +33,6 @@
   - .lightbox-meta h2  -> title
   - .lightbox-date     -> date text
   - .lightbox-description
-  - .lightbox-camera p -> camera metadata rows
   - .lightbox-nav      -> left/right arrows
 
   Admin pages (upload/edit/order)
@@ -929,11 +928,11 @@ select {
   position: fixed;
   inset: 0;
   z-index: 60;
-  background: rgba(0, 0, 0, 0.9);
+  background: #000;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1.25rem;
+  padding: 1rem;
   animation: lightbox-fade-in 140ms ease-out;
   overscroll-behavior: contain;
   overflow-y: auto;
@@ -941,11 +940,11 @@ select {
 
 /* Lightbox modal layout (image + metadata columns) */
 .lightbox-content {
-  width: min(92vw, 1500px);
-  max-height: 90vh;
+  width: min(96vw, 1700px);
+  max-height: 94vh;
   display: grid;
-  grid-template-columns: minmax(0, 7fr) minmax(260px, 3fr);
-  gap: 1.25rem;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
+  gap: 1rem;
   align-items: center;
   position: relative;
 }
@@ -954,8 +953,8 @@ select {
 .lightbox-image-wrap {
   position: relative;
   width: 100%;
-  height: min(90vh, 900px);
-  max-height: 90vh;
+  height: min(94vh, 980px);
+  max-height: 94vh;
 }
 
 /* Lightbox image rendering */
@@ -1020,7 +1019,8 @@ select {
 .lightbox-meta h2 {
   margin: 0;
   color: #fff;
-  font-size: 1.65rem;
+  font-size: 1.2rem;
+  line-height: 1.25;
   font-weight: 500;
 }
 
@@ -1028,29 +1028,15 @@ select {
 .lightbox-date {
   margin: 0.1rem 0 0;
   color: rgba(255, 255, 255, 0.6);
-  font-size: 1.1rem;
+  font-size: 0.95rem;
 }
 
 /* Lightbox description text */
 .lightbox-description {
-  margin: 1.6rem 0 0;
+  margin: 1rem 0 0;
   color: rgba(255, 255, 255, 0.8);
-  line-height: 1.6;
-  font-size: 1.2rem;
-}
-
-/* Lightbox camera metadata list */
-.lightbox-camera {
-  margin-top: 1.8rem;
-  display: grid;
-  gap: 0.2rem;
-}
-
-/* Lightbox camera metadata row */
-.lightbox-camera p {
-  margin: 0;
-  color: rgba(255, 255, 255, 0.72);
-  font-size: 1.15rem;
+  line-height: 1.5;
+  font-size: 1rem;
 }
 
 @media (max-width: 767px) {
@@ -1072,13 +1058,13 @@ select {
     width: 100%;
     max-height: none;
     grid-template-columns: 1fr;
-    gap: 0.25rem;
+    gap: 0.65rem;
     align-items: start;
-    margin-top: 2.25rem;
+    margin-top: 2rem;
   }
 
   .lightbox-image-wrap {
-    height: min(54vh, 460px);
+    height: min(72svh, 620px);
   }
 
   .lightbox-nav {
@@ -1096,28 +1082,18 @@ select {
   }
 
   .lightbox-meta h2 {
-    font-size: 1.35rem;
-    line-height: 1.2;
+    font-size: 1rem;
+    line-height: 1.25;
   }
 
   .lightbox-date {
     margin-top: 0.08rem;
-    font-size: 1rem;
+    font-size: 0.88rem;
   }
 
   .lightbox-description {
-    margin-top: 1rem;
-    font-size: 1.05rem;
-    line-height: 1.65;
-  }
-
-  .lightbox-camera {
-    margin-top: 1.25rem;
-    gap: 0.08rem;
-  }
-
-  .lightbox-camera p {
-    font-size: 1rem;
+    margin-top: 0.55rem;
+    font-size: 0.92rem;
     line-height: 1.45;
   }
 }

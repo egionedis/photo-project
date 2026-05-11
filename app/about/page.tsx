@@ -37,12 +37,11 @@ export default function AboutPage() {
         </div>
 
         <div className="about-copy">
-          <h1>About Edgar Gionedis</h1>
+          <h1>About me</h1>
           <div className="about-paragraphs">
             <p>
-              Photography Portfolio of Edgar Gionedis. This is a personal
-              photobook where I try to capture the people, places, and
-              movements that happen in my life.
+              This is a personal photobook where I try to capture the people,
+              places, and movements that happen in my life.
             </p>
           </div>
 

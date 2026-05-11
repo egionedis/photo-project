@@ -66,17 +66,6 @@ export function Lightbox({ photos, currentIndex, isOpen, onClose, onPrevious, on
   const description = activePhoto.description?.trim();
   const dateValue = getPhotoDisplayDateValue(activePhoto);
   const formattedDate = dateValue ? formatPhotoDate(dateValue) : undefined;
-  const cameraRows = [
-    {
-      label: "Camera",
-      value: activePhoto.camera?.model
-    },
-    { label: "Lens", value: activePhoto.camera?.lens },
-    { label: "Focal length", value: activePhoto.camera?.focalLength },
-    { label: "Aperture", value: activePhoto.camera?.aperture },
-    { label: "Shutter", value: activePhoto.camera?.shutter },
-    { label: "ISO", value: activePhoto.camera?.iso }
-  ].filter((row): row is { label: string; value: string } => Boolean(row.value));
 
   return (
     <div
@@ -174,15 +163,6 @@ export function Lightbox({ photos, currentIndex, isOpen, onClose, onPrevious, on
           <h2>{title}</h2>
           {formattedDate ? <p className="lightbox-date">{formattedDate}</p> : null}
           {description ? <p className="lightbox-description">{description}</p> : null}
-          {cameraRows.length ? (
-            <div className="lightbox-camera">
-              {cameraRows.map((row) => (
-                <p key={row.label}>
-                  {row.label}: {row.value}
-                </p>
-              ))}
-            </div>
-          ) : null}
         </div>
       </div>
     </div>
