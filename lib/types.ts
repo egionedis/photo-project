@@ -12,6 +12,8 @@ export type Photo = {
   publicId: string;
   title: string;
   description: string;
+  titleEn?: string;
+  descriptionEn?: string;
   sortOrder?: number;
   takenAt?: string;
   createdAt: string;

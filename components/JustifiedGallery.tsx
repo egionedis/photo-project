@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { CSSProperties } from "react";
 import Image from "next/image";
 import type { Photo } from "@/lib/types";
 import { Lightbox } from "@/components/lightbox";
+import { getLocalizedPhotoTitle, useLanguage } from "@/components/language-provider";
 
 type JustifiedGalleryProps = {
   photos: Photo[];
@@ -140,6 +142,7 @@ function buildRows(photos: Photo[], containerWidth: number): Row[] {
 }
 
 export function JustifiedGallery({ photos }: JustifiedGalleryProps) {
+  const { language } = useLanguage();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [containerWidth, setContainerWidth] = useState(0);
@@ -183,6 +186,25 @@ export function JustifiedGallery({ photos }: JustifiedGalleryProps) {
     setCurrentIndex((index) => (index - 1 + photos.length) % photos.length);
   }
 
+  function renderTile(photo: Photo, index: number, style: CSSProperties, sizes: string) {
+    const title = getLocalizedPhotoTitle(photo, language);
+
+    return (
+      <button
+        key={photo.publicId}
+        type="button"
+        className="justified-gallery-tile"
+        style={style}
+        onClick={() => openLightbox(index)}
+        aria-label={`Open ${title}`}
+      >
+        <div className="justified-gallery-tile-frame">
+          <Image src={photo.secureUrl} alt={title} fill sizes={sizes} className="justified-gallery-image" />
+        </div>
+      </button>
+    );
+  }
+
   if (!photos.length) {
     return (
       <section className="card" style={{ padding: "1rem" }}>
@@ -195,50 +217,30 @@ export function JustifiedGallery({ photos }: JustifiedGalleryProps) {
     <section className="justified-gallery-page">
       {isMobile ? (
         <div className="justified-gallery-flex" ref={containerRef}>
-          {photos.map((photo, index) => (
-            <button
-              key={photo.publicId}
-              type="button"
-              className="justified-gallery-tile"
-              style={
-                {
-                  ["--w" as any]: photo.width || 1,
-                  ["--h" as any]: photo.height || 1
-                } as React.CSSProperties
-              }
-              onClick={() => openLightbox(index)}
-              aria-label={`Open ${photo.title}`}
-            >
-              <div className="justified-gallery-tile-frame">
-                <Image src={photo.secureUrl} alt={photo.title} fill sizes="100vw" className="justified-gallery-image" />
-              </div>
-            </button>
-          ))}
+          {photos.map((photo, index) =>
+            renderTile(
+              photo,
+              index,
+              {
+                ["--w" as any]: photo.width || 1,
+                ["--h" as any]: photo.height || 1
+              } as CSSProperties,
+              "100vw"
+            )
+          )}
         </div>
       ) : (
         <div className="justified-gallery-grid" ref={containerRef}>
           {rows.map((row, rowIndex) => (
             <div key={`row-${rowIndex}`} className="justified-gallery-row" style={{ height: `${row.height}px` }}>
-              {row.items.map((item) => (
-                <button
-                  key={item.photo.publicId}
-                  type="button"
-                  className="justified-gallery-tile"
-                  style={{ width: `${item.width}px` }}
-                  onClick={() => openLightbox(item.index)}
-                  aria-label={`Open ${item.photo.title}`}
-                >
-                  <div className="justified-gallery-tile-frame">
-                    <Image
-                      src={item.photo.secureUrl}
-                      alt={item.photo.title}
-                      fill
-                      sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 33vw"
-                      className="justified-gallery-image"
-                    />
-                  </div>
-                </button>
-              ))}
+              {row.items.map((item) =>
+                renderTile(
+                  item.photo,
+                  item.index,
+                  { width: `${item.width}px` },
+                  "(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 33vw"
+                )
+              )}
             </div>
           ))}
         </div>

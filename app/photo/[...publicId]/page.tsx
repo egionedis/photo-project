@@ -1,8 +1,7 @@
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { buildImageUrl, getPhotoByPublicId } from "@/lib/cloudinary";
-import { formatPhotoDate, getPhotoDisplayDateValue } from "@/lib/photo-date";
+import { PhotoDetailClient } from "@/components/photo-detail-client";
 
 type PhotoPageProps = {
   params: Promise<{
@@ -50,28 +49,5 @@ export default async function PhotoDetailPage({ params }: PhotoPageProps) {
     notFound();
   }
 
-  return (
-    <article className="stack" style={{ gap: "1.2rem" }}>
-      <h1 style={{ margin: 0 }}>{photo.title}</h1>
-      <div className="card" style={{ overflow: "hidden" }}>
-        <Image
-          src={photo.secureUrl}
-          alt={photo.title}
-          width={1600}
-          height={1200}
-          priority
-          style={{ width: "100%", height: "auto", display: "block" }}
-        />
-      </div>
-      <div className="card" style={{ padding: "1rem" }}>
-        <p style={{ marginTop: 0 }}>{photo.description || "No description provided."}</p>
-        <p>
-          <strong>Date:</strong> {formatPhotoDate(getPhotoDisplayDateValue(photo))}
-        </p>
-        <p style={{ marginBottom: 0 }}>
-          <strong>Tags:</strong> {photo.tags.length ? photo.tags.join(", ") : "None"}
-        </p>
-      </div>
-    </article>
-  );
+  return <PhotoDetailClient photo={photo} />;
 }

@@ -4,15 +4,15 @@ export function getPhotoDisplayDateValue(photo: Pick<Photo, "takenAt" | "created
   return photo.takenAt || photo.createdAt || undefined;
 }
 
-export function formatPhotoDate(value: string | undefined): string {
+export function formatPhotoDate(value: string | undefined, locale = "en-US", unknownLabel = "Unknown"): string {
   if (!value) {
-    return "Unknown";
+    return unknownLabel;
   }
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) {
     return value;
   }
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat(locale, {
     month: "short",
     day: "numeric",
     year: "numeric"

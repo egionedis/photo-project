@@ -121,6 +121,8 @@ function mapResourceToPhoto(resource: CloudinaryResource): Photo {
   const tags = normalizeTags(resource.tags ?? context.tags);
   const title = context.title?.trim() || resource.public_id.split("/").pop() || resource.public_id;
   const description = context.description?.trim() || "";
+  const titleEn = context.title_en?.trim() || undefined;
+  const descriptionEn = context.description_en?.trim() || undefined;
   const sortOrderRaw = context.sort_order?.trim() || context.display_order?.trim();
   const parsedSortOrder = sortOrderRaw !== undefined ? Number(sortOrderRaw) : undefined;
   const sortOrder = Number.isFinite(parsedSortOrder) ? parsedSortOrder : undefined;
@@ -144,6 +146,8 @@ function mapResourceToPhoto(resource: CloudinaryResource): Photo {
     publicId: resource.public_id,
     title,
     description,
+    titleEn,
+    descriptionEn,
     sortOrder,
     takenAt,
     createdAt,
@@ -283,6 +287,8 @@ export async function updatePhotoMetadata(fields: {
   publicId: string;
   title: string;
   description: string;
+  titleEn?: string | null;
+  descriptionEn?: string | null;
   tags?: string[];
   sortOrder?: number | null;
   takenAt?: string | null;
@@ -307,6 +313,12 @@ export async function updatePhotoMetadata(fields: {
     description: fields.description
   };
 
+  if (fields.titleEn !== undefined) {
+    nextContextFields.title_en = fields.titleEn === null ? undefined : fields.titleEn;
+  }
+  if (fields.descriptionEn !== undefined) {
+    nextContextFields.description_en = fields.descriptionEn === null ? undefined : fields.descriptionEn;
+  }
   if (fields.sortOrder !== undefined) {
     nextContextFields.sort_order = fields.sortOrder === null ? undefined : fields.sortOrder.toString();
   }

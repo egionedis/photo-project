@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { AboutContent } from "@/components/about-content";
 
 const PORTRAIT_URL =
   "https://res.cloudinary.com/daeq8lxbv/image/upload/v1771703886/IMG_0008_zfoqiv.jpg";
@@ -37,19 +38,7 @@ export default function AboutPage() {
         </div>
 
         <div className="about-copy">
-          <h1>About me</h1>
-          <div className="about-paragraphs">
-            <p>
-              This is a personal photobook where I try to capture the people,
-              places, and movements that happen in my life.
-            </p>
-          </div>
-
-          <p className="about-contact">
-            Contact
-            <br />
-            edgar.gionedis@gmail.com
-          </p>
+          <AboutContent />
         </div>
       </div>
     </section>

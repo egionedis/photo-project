@@ -45,10 +45,10 @@ function getCameraRows(photo: Photo): Array<{ label: string; value: string }> {
 
   const rows: Array<{ label: string; value: string | undefined }> = [
     { label: "Camera", value: camera.model || undefined },
-    { label: "Lens", value: camera.lens },
-    { label: "Focal length", value: camera.focalLength },
-    { label: "Aperture", value: camera.aperture },
-    { label: "Shutter", value: camera.shutter },
+    { label: "Lente", value: camera.lens },
+    { label: "Distancia focal", value: camera.focalLength },
+    { label: "Abertura", value: camera.aperture },
+    { label: "Velocidade", value: camera.shutter },
     { label: "ISO", value: camera.iso }
   ];
 
@@ -72,6 +72,8 @@ export function AdminEditPhotos({ photos }: AdminEditPhotosProps) {
   const [selectedPublicId, setSelectedPublicId] = useState(photos[0]?.publicId || "");
   const [title, setTitle] = useState(photos[0]?.title || "");
   const [description, setDescription] = useState(photos[0]?.description || "");
+  const [titleEn, setTitleEn] = useState(photos[0]?.titleEn || "");
+  const [descriptionEn, setDescriptionEn] = useState(photos[0]?.descriptionEn || "");
   const [tagsInput, setTagsInput] = useState((photos[0]?.tags || []).join(", "));
   const [takenAtInput, setTakenAtInput] = useState(toDateInputValue(photos[0]?.takenAt));
   const [cameraModel, setCameraModel] = useState(photos[0]?.camera?.model || "");
@@ -89,13 +91,20 @@ export function AdminEditPhotos({ photos }: AdminEditPhotosProps) {
     const term = query.trim().toLowerCase();
     const base = !term
       ? items
-      : items.filter((photo) => {
+        : items.filter((photo) => {
           const titleText = photo.title.toLowerCase();
           const descriptionText = photo.description.toLowerCase();
-          return titleText.includes(term) || descriptionText.includes(term);
+          const titleEnText = (photo.titleEn || "").toLowerCase();
+          const descriptionEnText = (photo.descriptionEn || "").toLowerCase();
+          return (
+            titleText.includes(term) ||
+            descriptionText.includes(term) ||
+            titleEnText.includes(term) ||
+            descriptionEnText.includes(term)
+          );
         });
 
-    return [...base].sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
+    return base;
   }, [items, query]);
 
   const selected = useMemo(
@@ -108,6 +117,8 @@ export function AdminEditPhotos({ photos }: AdminEditPhotosProps) {
     setSelectedPublicId(photo.publicId);
     setTitle(photo.title);
     setDescription(photo.description);
+    setTitleEn(photo.titleEn || "");
+    setDescriptionEn(photo.descriptionEn || "");
     setTagsInput(photo.tags.join(", "));
     setTakenAtInput(toDateInputValue(photo.takenAt));
     setCameraModel(photo.camera?.model || "");
@@ -142,6 +153,8 @@ export function AdminEditPhotos({ photos }: AdminEditPhotosProps) {
           publicId: selected.publicId,
           title: title.trim(),
           description: description.trim(),
+          titleEn,
+          descriptionEn,
           tags: normalizeTagsInput(tagsInput).join(","),
           takenAt: takenAtInput,
           cameraModel,
@@ -164,6 +177,8 @@ export function AdminEditPhotos({ photos }: AdminEditPhotosProps) {
                 ...photo,
                 title: title.trim(),
                 description: description.trim(),
+                titleEn: titleEn.trim() || undefined,
+                descriptionEn: descriptionEn.trim() || undefined,
                 tags: normalizeTagsInput(tagsInput),
                 takenAt: normalizedTakenAt || undefined,
                 camera: {
@@ -217,6 +232,8 @@ export function AdminEditPhotos({ photos }: AdminEditPhotosProps) {
         setSelectedPublicId(next.publicId);
         setTitle(next.title);
         setDescription(next.description);
+        setTitleEn(next.titleEn || "");
+        setDescriptionEn(next.descriptionEn || "");
         setTagsInput(next.tags.join(", "));
         setTakenAtInput(toDateInputValue(next.takenAt));
         setCameraModel(next.camera?.model || "");
@@ -229,6 +246,8 @@ export function AdminEditPhotos({ photos }: AdminEditPhotosProps) {
         setSelectedPublicId("");
         setTitle("");
         setDescription("");
+        setTitleEn("");
+        setDescriptionEn("");
         setTagsInput("");
         setTakenAtInput("");
         setCameraModel("");
@@ -280,7 +299,7 @@ export function AdminEditPhotos({ photos }: AdminEditPhotosProps) {
                 />
                 <span>
                   <strong>{photo.title || "Untitled"}</strong>
-                  <small>{formatPhotoDate(getPhotoDisplayDateValue(photo))}</small>
+                  <small>{formatPhotoDate(getPhotoDisplayDateValue(photo), "pt-PT", "Desconhecido")}</small>
                 </span>
               </button>
             );
@@ -301,16 +320,30 @@ export function AdminEditPhotos({ photos }: AdminEditPhotosProps) {
           </div>
 
           <label className="stack" style={{ gap: "0.35rem" }}>
-            Title
+            Titulo em portugues
             <input className="input" type="text" value={title} onChange={(event) => setTitle(event.target.value)} />
           </label>
 
           <label className="stack" style={{ gap: "0.35rem" }}>
-            Description
+            Texto em portugues
             <textarea
               className="textarea"
               value={description}
               onChange={(event) => setDescription(event.target.value)}
+            />
+          </label>
+
+          <label className="stack" style={{ gap: "0.35rem" }}>
+            Title in English (optional)
+            <input className="input" type="text" value={titleEn} onChange={(event) => setTitleEn(event.target.value)} />
+          </label>
+
+          <label className="stack" style={{ gap: "0.35rem" }}>
+            Text in English (optional)
+            <textarea
+              className="textarea"
+              value={descriptionEn}
+              onChange={(event) => setDescriptionEn(event.target.value)}
             />
           </label>
 
@@ -325,23 +358,23 @@ export function AdminEditPhotos({ photos }: AdminEditPhotosProps) {
           </label>
 
           <label className="stack" style={{ gap: "0.35rem" }}>
-            Date taken (optional)
+            Data da foto (opcional)
             <input className="input" type="date" value={takenAtInput} onChange={(event) => setTakenAtInput(event.target.value)} />
           </label>
 
           <div className="stack" style={{ gap: "0.5rem" }}>
-            <strong style={{ fontSize: "0.92rem" }}>Camera settings (editable)</strong>
-            <input className="input" type="text" placeholder="Camera model" value={cameraModel} onChange={(event) => setCameraModel(event.target.value)} />
-            <input className="input" type="text" placeholder="Lens model" value={lensModel} onChange={(event) => setLensModel(event.target.value)} />
-            <input className="input" type="text" placeholder="Focal length (e.g. 35mm)" value={focalLength} onChange={(event) => setFocalLength(event.target.value)} />
-            <input className="input" type="text" placeholder="Aperture (e.g. f/2.8)" value={aperture} onChange={(event) => setAperture(event.target.value)} />
-            <input className="input" type="text" placeholder="Shutter (e.g. 1/125)" value={shutter} onChange={(event) => setShutter(event.target.value)} />
+            <strong style={{ fontSize: "0.92rem" }}>Dados da camera (editavel)</strong>
+            <input className="input" type="text" placeholder="Modelo da camera" value={cameraModel} onChange={(event) => setCameraModel(event.target.value)} />
+            <input className="input" type="text" placeholder="Modelo da lente" value={lensModel} onChange={(event) => setLensModel(event.target.value)} />
+            <input className="input" type="text" placeholder="Distancia focal (ex. 35mm)" value={focalLength} onChange={(event) => setFocalLength(event.target.value)} />
+            <input className="input" type="text" placeholder="Abertura (ex. f/2.8)" value={aperture} onChange={(event) => setAperture(event.target.value)} />
+            <input className="input" type="text" placeholder="Velocidade (ex. 1/125)" value={shutter} onChange={(event) => setShutter(event.target.value)} />
             <input className="input" type="text" placeholder="ISO" value={iso} onChange={(event) => setIso(event.target.value)} />
           </div>
 
           <div className="admin-meta-block">
             <p style={{ margin: 0, color: "var(--muted)" }}>
-              Date taken: {formatPhotoDate(getPhotoDisplayDateValue(selected))}
+              Data da foto: {formatPhotoDate(getPhotoDisplayDateValue(selected), "pt-PT", "Desconhecido")}
             </p>
             {selectedCameraRows.map((row) => (
               <p key={row.label} style={{ margin: 0, color: "var(--muted)" }}>

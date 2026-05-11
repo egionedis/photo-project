@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { EB_Garamond } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/header";
+import { LanguageProvider } from "@/components/language-provider";
 
 const ebGaramond = EB_Garamond({
   subsets: ["latin"],
@@ -15,10 +16,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="pt">
       <body className={ebGaramond.variable}>
-        <Header />
-        <main className="container page">{children}</main>
+        <LanguageProvider>
+          <Header />
+          <main className="container page">{children}</main>
+        </LanguageProvider>
       </body>
     </html>
   );

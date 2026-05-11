@@ -3,7 +3,13 @@
 import { useEffect, useRef } from "react";
 import Image from "next/image";
 import type { Photo } from "@/lib/types";
-import { formatPhotoDate, getPhotoDisplayDateValue } from "@/lib/photo-date";
+import { getPhotoDisplayDateValue } from "@/lib/photo-date";
+import {
+  formatLocalizedDate,
+  getLocalizedPhotoDescription,
+  getLocalizedPhotoTitle,
+  useLanguage
+} from "@/components/language-provider";
 
 type LightboxProps = {
   photos: Photo[];
@@ -15,6 +21,7 @@ type LightboxProps = {
 };
 
 export function Lightbox({ photos, currentIndex, isOpen, onClose, onPrevious, onNext }: LightboxProps) {
+  const { language, t } = useLanguage();
   const touchStartXRef = useRef<number | null>(null);
   const touchStartYRef = useRef<number | null>(null);
 
@@ -62,10 +69,10 @@ export function Lightbox({ photos, currentIndex, isOpen, onClose, onPrevious, on
   }
 
   const activePhoto = photos[currentIndex];
-  const title = activePhoto.title?.trim() || "Untitled";
-  const description = activePhoto.description?.trim();
+  const title = getLocalizedPhotoTitle(activePhoto, language);
+  const description = getLocalizedPhotoDescription(activePhoto, language);
   const dateValue = getPhotoDisplayDateValue(activePhoto);
-  const formattedDate = dateValue ? formatPhotoDate(dateValue) : undefined;
+  const formattedDate = dateValue ? formatLocalizedDate(dateValue, language) : undefined;
 
   return (
     <div
@@ -118,7 +125,7 @@ export function Lightbox({ photos, currentIndex, isOpen, onClose, onPrevious, on
           event.stopPropagation();
           onClose();
         }}
-        aria-label="Close photo"
+        aria-label={t("closePhoto")}
       >
         ×
       </button>
@@ -130,7 +137,7 @@ export function Lightbox({ photos, currentIndex, isOpen, onClose, onPrevious, on
           event.stopPropagation();
           onPrevious();
         }}
-        aria-label="Previous photo"
+        aria-label={t("previousPhoto")}
       >
         &#8249;
       </button>
@@ -142,7 +149,7 @@ export function Lightbox({ photos, currentIndex, isOpen, onClose, onPrevious, on
           event.stopPropagation();
           onNext();
         }}
-        aria-label="Next photo"
+        aria-label={t("nextPhoto")}
       >
         &#8250;
       </button>
@@ -151,7 +158,7 @@ export function Lightbox({ photos, currentIndex, isOpen, onClose, onPrevious, on
         <div className="lightbox-image-wrap">
           <Image
             src={activePhoto.secureUrl}
-            alt={activePhoto.title}
+            alt={title}
             fill
             sizes="100vw"
             className="lightbox-image"
