@@ -10,8 +10,7 @@ const ebGaramond = EB_Garamond({
 });
 
 export const metadata: Metadata = {
-  title: "Edgar Gionedis",
-  description: ""
+  metadataBase: new URL("https://edgargionedis.com")
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
