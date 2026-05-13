@@ -1,40 +1,58 @@
 "use client";
 
 import Link from "next/link";
-import { useLanguage } from "@/components/language-provider";
+import Image from "next/image";
+import { useState } from "react";
+import styles from "./Header.module.css";
 
 export function Header() {
-  const { language, setLanguage, t } = useLanguage();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <header className="site-header">
-      <div className="container inner">
-        <Link className="site-title" href="/gallery">
+    <header className={styles.header}>
+      <div className={styles.inner}>
+        <Link href="/" className={styles.logoPlaceholder} aria-label="Home">
+          <Image
+            src="/logo.png"
+            alt="Edgar Gionedis"
+            width={40}
+            height={40}
+            className={styles.logoImage}
+            priority
+          />
+        </Link>
+
+        <Link className={styles.title} href="/">
           Edgar Gionedis
         </Link>
-        <nav className="site-nav" aria-label="Main navigation">
-          <Link href="/gallery">{t("gallery")}</Link>
-          <Link href="/about">{t("about")}</Link>
-          <div className="language-toggle" aria-label={t("language")}>
-            <button
-              type="button"
-              className={language === "pt" ? "is-active" : ""}
-              onClick={() => setLanguage("pt")}
-              aria-pressed={language === "pt"}
-            >
-              PT
-            </button>
-            <button
-              type="button"
-              className={language === "en" ? "is-active" : ""}
-              onClick={() => setLanguage("en")}
-              aria-pressed={language === "en"}
-            >
-              EN
-            </button>
-          </div>
+
+        <nav className={`${styles.nav} ${styles.desktopNav}`} aria-label="Main navigation">
+          <Link href="/">Home</Link>
+          <Link href="/collections">Collections</Link>
+          <Link href="/about">About</Link>
         </nav>
+
+        <button
+          className={styles.mobileMenuToggle}
+          aria-label="Toggle menu"
+          aria-expanded={mobileMenuOpen}
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        >
+          <span className={`${styles.hamburger} ${mobileMenuOpen ? 'open' : ''}`}>
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+        </button>
       </div>
+
+      {mobileMenuOpen && (
+        <nav className={`${styles.nav} ${styles.mobileNav}`} aria-label="Mobile navigation">
+          <Link href="/" onClick={() => setMobileMenuOpen(false)}>Home</Link>
+          <Link href="/collections" onClick={() => setMobileMenuOpen(false)}>Collections</Link>
+          <Link href="/about" onClick={() => setMobileMenuOpen(false)}>About</Link>
+        </nav>
+      )}
     </header>
   );
 }

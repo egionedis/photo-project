@@ -4,12 +4,9 @@ import { useEffect, useRef } from "react";
 import Image from "next/image";
 import type { Photo } from "@/lib/types";
 import { getPhotoDisplayDateValue } from "@/lib/photo-date";
-import {
-  formatLocalizedDate,
-  getLocalizedPhotoDescription,
-  getLocalizedPhotoTitle,
-  useLanguage
-} from "@/components/language-provider";
+import { useLanguage } from "@/components/language-provider";
+import { formatPortfolioDate, getPhotoDescription, getPhotoTitle } from "@/lib/photo-text";
+import styles from "./Lightbox.module.css";
 
 type LightboxProps = {
   photos: Photo[];
@@ -21,7 +18,7 @@ type LightboxProps = {
 };
 
 export function Lightbox({ photos, currentIndex, isOpen, onClose, onPrevious, onNext }: LightboxProps) {
-  const { language, t } = useLanguage();
+  const { t } = useLanguage();
   const touchStartXRef = useRef<number | null>(null);
   const touchStartYRef = useRef<number | null>(null);
 
@@ -69,14 +66,14 @@ export function Lightbox({ photos, currentIndex, isOpen, onClose, onPrevious, on
   }
 
   const activePhoto = photos[currentIndex];
-  const title = getLocalizedPhotoTitle(activePhoto, language);
-  const description = getLocalizedPhotoDescription(activePhoto, language);
+  const title = getPhotoTitle(activePhoto);
+  const description = getPhotoDescription(activePhoto);
   const dateValue = getPhotoDisplayDateValue(activePhoto);
-  const formattedDate = dateValue ? formatLocalizedDate(dateValue, language) : undefined;
+  const formattedDate = dateValue ? formatPortfolioDate(dateValue) : undefined;
 
   return (
     <div
-      className="lightbox-overlay"
+      className={styles.overlay}
       onClick={onClose}
       onTouchStart={(event) => {
         const touch = event.touches[0];
@@ -103,7 +100,6 @@ export function Lightbox({ photos, currentIndex, isOpen, onClose, onPrevious, on
         const absX = Math.abs(deltaX);
         const absY = Math.abs(deltaY);
 
-        // Only treat as swipe when horizontal movement is dominant.
         if (absX < 40 || absX <= absY) {
           return;
         }
@@ -119,7 +115,7 @@ export function Lightbox({ photos, currentIndex, isOpen, onClose, onPrevious, on
       aria-label="Photo lightbox"
     >
       <button
-        className="lightbox-close"
+        className={styles.close}
         type="button"
         onClick={(event) => {
           event.stopPropagation();
@@ -127,11 +123,11 @@ export function Lightbox({ photos, currentIndex, isOpen, onClose, onPrevious, on
         }}
         aria-label={t("closePhoto")}
       >
-        ×
+        &times;
       </button>
 
       <button
-        className="lightbox-nav lightbox-nav-left"
+        className={`${styles.nav} ${styles.navLeft}`}
         type="button"
         onClick={(event) => {
           event.stopPropagation();
@@ -143,7 +139,7 @@ export function Lightbox({ photos, currentIndex, isOpen, onClose, onPrevious, on
       </button>
 
       <button
-        className="lightbox-nav lightbox-nav-right"
+        className={`${styles.nav} ${styles.navRight}`}
         type="button"
         onClick={(event) => {
           event.stopPropagation();
@@ -154,22 +150,22 @@ export function Lightbox({ photos, currentIndex, isOpen, onClose, onPrevious, on
         &#8250;
       </button>
 
-      <div className="lightbox-content" onClick={(event) => event.stopPropagation()}>
-        <div className="lightbox-image-wrap">
+      <div className={styles.content} onClick={(event) => event.stopPropagation()}>
+        <div className={styles.imageWrap}>
           <Image
             src={activePhoto.secureUrl}
             alt={title}
             fill
             sizes="100vw"
-            className="lightbox-image"
+            className={styles.image}
             priority
           />
         </div>
 
-        <div className="lightbox-meta">
+        <div className={styles.meta}>
           <h2>{title}</h2>
-          {formattedDate ? <p className="lightbox-date">{formattedDate}</p> : null}
-          {description ? <p className="lightbox-description">{description}</p> : null}
+          {formattedDate ? <p className={styles.date}>{formattedDate}</p> : null}
+          {description ? <p className={styles.description}>{description}</p> : null}
         </div>
       </div>
     </div>

@@ -5,7 +5,8 @@ import type { CSSProperties } from "react";
 import Image from "next/image";
 import type { Photo } from "@/lib/types";
 import { Lightbox } from "@/components/lightbox";
-import { getLocalizedPhotoTitle, useLanguage } from "@/components/language-provider";
+import { getPhotoTitle } from "@/lib/photo-text";
+import styles from "./JustifiedGallery.module.css";
 
 type JustifiedGalleryProps = {
   photos: Photo[];
@@ -116,7 +117,6 @@ function buildRows(photos: Photo[], containerWidth: number): Row[] {
     }
 
     if (containerWidth >= 1024 && bucket.length === 3) {
-      // Default to 3 per row. Allow 4 only when a vertical/narrow image leaves extra room.
       if (!hasVertical) {
         flushRow(true);
         continue;
@@ -134,7 +134,6 @@ function buildRows(photos: Photo[], containerWidth: number): Row[] {
   }
 
   if (bucket.length) {
-    // Keep the last incomplete row at target height so a single image doesn't expand to full width.
     flushRow(false);
   }
 
@@ -142,7 +141,6 @@ function buildRows(photos: Photo[], containerWidth: number): Row[] {
 }
 
 export function JustifiedGallery({ photos }: JustifiedGalleryProps) {
-  const { language } = useLanguage();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [containerWidth, setContainerWidth] = useState(0);
@@ -187,19 +185,19 @@ export function JustifiedGallery({ photos }: JustifiedGalleryProps) {
   }
 
   function renderTile(photo: Photo, index: number, style: CSSProperties, sizes: string) {
-    const title = getLocalizedPhotoTitle(photo, language);
+    const title = getPhotoTitle(photo);
 
     return (
       <button
         key={photo.publicId}
         type="button"
-        className="justified-gallery-tile"
+        className={styles.tile}
         style={style}
         onClick={() => openLightbox(index)}
         aria-label={`Open ${title}`}
       >
-        <div className="justified-gallery-tile-frame">
-          <Image src={photo.secureUrl} alt={title} fill sizes={sizes} className="justified-gallery-image" />
+        <div className={styles.tileFrame}>
+          <Image src={photo.secureUrl} alt={title} fill sizes={sizes} className={styles.image} />
         </div>
       </button>
     );
@@ -214,9 +212,9 @@ export function JustifiedGallery({ photos }: JustifiedGalleryProps) {
   }
 
   return (
-    <section className="justified-gallery-page">
+    <section className={styles.page}>
       {isMobile ? (
-        <div className="justified-gallery-flex" ref={containerRef}>
+        <div className={styles.flex} ref={containerRef}>
           {photos.map((photo, index) =>
             renderTile(
               photo,
@@ -230,9 +228,9 @@ export function JustifiedGallery({ photos }: JustifiedGalleryProps) {
           )}
         </div>
       ) : (
-        <div className="justified-gallery-grid" ref={containerRef}>
+        <div className={styles.grid} ref={containerRef}>
           {rows.map((row, rowIndex) => (
-            <div key={`row-${rowIndex}`} className="justified-gallery-row" style={{ height: `${row.height}px` }}>
+            <div key={`row-${rowIndex}`} className={styles.row} style={{ height: `${row.height}px` }}>
               {row.items.map((item) =>
                 renderTile(
                   item.photo,

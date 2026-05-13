@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { AboutContent } from "@/components/about-content";
+import styles from "./page.module.css";
 
 const PORTRAIT_URL =
   "https://res.cloudinary.com/daeq8lxbv/image/upload/v1771703886/IMG_0008_zfoqiv.jpg";
@@ -23,21 +24,21 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <section className="about-page">
-      <div className="about-grid">
-        <div className="about-image-wrap">
+    <section className={styles.page}>
+      <div className={styles.grid}>
+        <div className={styles.imageWrap}>
           <Image
             src={PORTRAIT_URL}
             alt="Portrait"
             width={1200}
             height={1600}
             sizes="(max-width: 767px) 100vw, 50vw"
-            className="about-image"
+            className={styles.image}
             unoptimized
           />
         </div>
 
-        <div className="about-copy">
+        <div className={styles.copy}>
           <AboutContent />
         </div>
       </div>

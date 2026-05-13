@@ -1,23 +1,35 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
+import { getGalleryPhotos } from "@/lib/cloudinary";
+import { getFeaturedPhotos } from "@/lib/collections";
+import { HomeGallery } from "@/components/home-gallery";
+import styles from "./page.module.css";
 
-const SITE_DESCRIPTION =
-  "Photography portfolio of Edgar Gionedis, featuring travel, landscape, street, and personal photography.";
+const SITE_DESCRIPTION = "A personal photobook of places, people, and quiet movements.";
 
 export const metadata: Metadata = {
-  title: "Edgar Gionedis | Photography Portfolio",
+  title: "Edgar Gionedis | Photography",
   description: SITE_DESCRIPTION,
   alternates: {
     canonical: "/"
   },
   openGraph: {
-    title: "Edgar Gionedis | Photography Portfolio",
+    title: "Edgar Gionedis | Photography",
     description: SITE_DESCRIPTION,
     url: "/",
     type: "website"
   }
 };
 
-export default function HomePage() {
-  redirect("/gallery");
+export const revalidate = 60;
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  const photos = await getGalleryPhotos();
+  const featuredPhotos = getFeaturedPhotos(photos);
+
+  return (
+    <section className={styles.obsidianHomePage}>
+      <HomeGallery photos={featuredPhotos} />
+    </section>
+  );
 }

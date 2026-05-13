@@ -1,0 +1,174 @@
+/* Fullscreen lightbox modal */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: lightboxFadeIn 140ms ease-out;
+  overscroll-behavior: contain;
+  overflow-y: auto;
+}
+
+.content {
+  width: min(96vw, 1700px);
+  max-height: 94vh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
+  gap: 1rem;
+  align-items: center;
+  position: relative;
+}
+
+.imageWrap {
+  position: relative;
+  width: 100%;
+  height: min(94vh, 980px);
+  max-height: 94vh;
+}
+
+.image {
+  object-fit: contain;
+}
+
+.nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 66;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 3rem;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+  transition: color 140ms ease;
+}
+
+.nav:hover {
+  color: #fff;
+}
+
+.navLeft {
+  left: 1rem;
+}
+
+.navRight {
+  right: 1rem;
+}
+
+.close {
+  position: absolute;
+  top: 0.65rem;
+  right: 0.9rem;
+  z-index: 65;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 2rem;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+  transition: color 140ms ease;
+}
+
+.close:hover {
+  color: #fff;
+}
+
+.meta {
+  width: 100%;
+  align-self: center;
+}
+
+.meta h2 {
+  margin: 0;
+  color: #fff;
+  font-size: 1.2rem;
+  line-height: 1.25;
+  font-weight: 500;
+}
+
+.date {
+  margin: 0.1rem 0 0;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.95rem;
+}
+
+.description {
+  margin: 1rem 0 0;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.5;
+  font-size: 1rem;
+}
+
+@keyframes lightboxFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes lightboxZoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Mobile */
+@media (max-width: 767px) {
+  .content {
+    width: 100%;
+    max-height: none;
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+    align-items: start;
+    margin-top: 2rem;
+  }
+
+  .imageWrap {
+    height: min(72svh, 620px);
+  }
+
+  .nav {
+    display: none;
+  }
+
+  .close {
+    font-size: 2.1rem;
+    top: 0.55rem;
+    right: 0.75rem;
+  }
+
+  .meta {
+    padding-bottom: 0.75rem;
+  }
+
+  .meta h2 {
+    font-size: 1rem;
+    line-height: 1.25;
+  }
+
+  .date {
+    margin-top: 0.08rem;
+    font-size: 0.88rem;
+  }
+
+  .description {
+    margin-top: 0.55rem;
+    font-size: 0.92rem;
+    line-height: 1.45;
+  }
+}
