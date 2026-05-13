@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { AdminNav } from "@/components/admin-nav";
+import { AdminLogoutButton } from "@/components/admin-logout-button";
 import { AdminFeaturedPhotos } from "@/components/admin-featured-photos";
 import { getGalleryPhotos } from "@/lib/cloudinary";
 import styles from "../admin.module.css";
@@ -21,6 +22,7 @@ export default async function AdminFeaturedPage() {
       <div className={styles.shell}>
         <header className={styles.header}>
           <h1 className={styles.title}>Admin</h1>
+          <AdminLogoutButton />
         </header>
 
         <AdminNav current="featured" />
