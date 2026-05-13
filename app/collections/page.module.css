@@ -108,8 +108,8 @@
   font-size: 0.95rem;
 }
 
-/* Mobile: 2 columns with portrait tiles */
-@media (max-width: 1024px) {
+/* Tablet and mobile: max 2 columns */
+@media (max-width: 1280px) {
   .intro {
     padding-inline: clamp(0.5rem, 3vw, 1rem);
   }
