@@ -38,6 +38,6 @@
 
 @media (max-width: 767px) {
   .intro {
-    padding: 1rem clamp(2rem, 6vw, 5rem) 0.75rem;
+    padding: 1rem clamp(0.5rem, 3vw, 1rem) 0.75rem;
   }
 }
