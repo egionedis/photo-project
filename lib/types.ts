@@ -15,6 +15,7 @@ export type Photo = {
   titleEn?: string;
   descriptionEn?: string;
   sortOrder?: number;
+  featured?: boolean;
   takenAt?: string;
   createdAt: string;
   tags: string[];
