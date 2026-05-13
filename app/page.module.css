@@ -385,12 +385,22 @@
 @media (max-width: 767px) {
   .obsidianHomePage {
     background: #ffffff;
-    height: calc(100vh - clamp(3rem, 4.5vh, 4rem));
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+  }
+
+  .obsidianHeadingContainer {
+    top: calc(clamp(3rem, 4.5vh, 4rem) + 2.5rem);
   }
 
   .obsidianStrip {
     gap: 0.625rem;
-    padding: 0.5rem 1.25rem 2rem;
+    padding: 0 1.25rem 2rem;
     background: #ffffff;
   }
 

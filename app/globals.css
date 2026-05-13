@@ -44,7 +44,11 @@ body {
 
 /* Homepage overflow control for horizontal scroll */
 body:has(.obsidian-home-page) {
-  overflow-y: hidden;
+  overflow: hidden;
+}
+
+html:has(.obsidian-home-page) {
+  overflow: hidden;
 }
 
 /* Links & Images */
