@@ -3,7 +3,15 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getAdminSessionFromCookies, isValidAdminSessionToken } from "@/lib/auth";
 import { rebuildGallerySnapshot, updatePhotoMetadata } from "@/lib/cloudinary";
-import { normalizeTagsInput } from "@/lib/tags";
+import { COLLECTION_REVALIDATE_PATHS, TAGGED_COLLECTIONS } from "@/lib/collections";
+
+function normalizeCollectionTags(input: string): string[] {
+  const allowedTags = new Set(TAGGED_COLLECTIONS.map((collection) => collection.slug));
+  return input
+    .split(",")
+    .map((tag) => tag.trim().toLowerCase())
+    .filter((tag, index, tags) => tag && allowedTags.has(tag as (typeof TAGGED_COLLECTIONS)[number]["slug"]) && tags.indexOf(tag) === index);
+}
 
 const schema = z.object({
   publicId: z.string().min(1),
@@ -12,6 +20,7 @@ const schema = z.object({
   titleEn: z.string().optional(),
   descriptionEn: z.string().optional(),
   tags: z.string().optional(),
+  featured: z.boolean().optional(),
   sortOrder: z.number().nullable().optional(),
   takenAt: z.string().optional(),
   cameraMake: z.string().optional(),
@@ -48,7 +57,8 @@ export async function POST(request: Request) {
     description: data.description.trim(),
     titleEn: data.titleEn !== undefined ? (data.titleEn.trim() || null) : undefined,
     descriptionEn: data.descriptionEn !== undefined ? (data.descriptionEn.trim() || null) : undefined,
-    tags: data.tags !== undefined ? normalizeTagsInput(data.tags) : undefined,
+    tags: data.tags !== undefined ? normalizeCollectionTags(data.tags) : undefined,
+    featured: data.featured,
     sortOrder: data.sortOrder,
     takenAt: data.takenAt !== undefined ? (data.takenAt.trim() || null) : undefined,
     cameraMake: data.cameraMake !== undefined ? (data.cameraMake.trim() || null) : undefined,
@@ -61,9 +71,13 @@ export async function POST(request: Request) {
   });
   await rebuildGallerySnapshot();
 
-  revalidatePath("/gallery");
+  for (const path of COLLECTION_REVALIDATE_PATHS) {
+    revalidatePath(path);
+  }
   revalidatePath(toPhotoPath(data.publicId));
   revalidatePath("/admin/edit");
+  revalidatePath("/admin/featured");
+  revalidatePath("/");
 
   return NextResponse.json({ ok: true });
 }
