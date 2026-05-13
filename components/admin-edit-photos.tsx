@@ -1,14 +1,17 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { Photo } from "@/lib/types";
 import { formatPhotoDate, getPhotoDisplayDateValue } from "@/lib/photo-date";
-import { normalizeTagsInput } from "@/lib/tags";
+import { TAGGED_COLLECTIONS } from "@/lib/collections";
+import { getPhotoDescription, getPhotoTitle } from "@/lib/photo-text";
+import styles from "../app/admin/admin.module.css";
 
 type AdminEditPhotosProps = {
   photos: Photo[];
+  initialPhotoId?: string;
 };
 
 function toDateInputValue(value: string | undefined): string {
@@ -45,10 +48,10 @@ function getCameraRows(photo: Photo): Array<{ label: string; value: string }> {
 
   const rows: Array<{ label: string; value: string | undefined }> = [
     { label: "Camera", value: camera.model || undefined },
-    { label: "Lente", value: camera.lens },
-    { label: "Distancia focal", value: camera.focalLength },
-    { label: "Abertura", value: camera.aperture },
-    { label: "Velocidade", value: camera.shutter },
+    { label: "Lens", value: camera.lens },
+    { label: "Focal length", value: camera.focalLength },
+    { label: "Aperture", value: camera.aperture },
+    { label: "Shutter", value: camera.shutter },
     { label: "ISO", value: camera.iso }
   ];
 
@@ -66,45 +69,51 @@ function getSidebarThumbnail(url: string): string {
   return url.replace("/upload/", "/upload/c_fill,w_96,h_72,q_auto,f_auto/");
 }
 
-export function AdminEditPhotos({ photos }: AdminEditPhotosProps) {
+function normalizeSelectedCollectionTags(tags: string[]): string[] {
+  return TAGGED_COLLECTIONS.map((collection) => collection.slug).filter((slug) => tags.includes(slug));
+}
+
+function toggleCollectionTag(tags: string[], tag: string): string[] {
+  if (tags.includes(tag)) {
+    return tags.filter((value) => value !== tag);
+  }
+  return normalizeSelectedCollectionTags([...tags, tag]);
+}
+
+export function AdminEditPhotos({ photos, initialPhotoId }: AdminEditPhotosProps) {
   const [items, setItems] = useState<Photo[]>(photos);
   const [query, setQuery] = useState("");
-  const [selectedPublicId, setSelectedPublicId] = useState(photos[0]?.publicId || "");
-  const [title, setTitle] = useState(photos[0]?.title || "");
-  const [description, setDescription] = useState(photos[0]?.description || "");
-  const [titleEn, setTitleEn] = useState(photos[0]?.titleEn || "");
-  const [descriptionEn, setDescriptionEn] = useState(photos[0]?.descriptionEn || "");
-  const [tagsInput, setTagsInput] = useState((photos[0]?.tags || []).join(", "));
-  const [takenAtInput, setTakenAtInput] = useState(toDateInputValue(photos[0]?.takenAt));
-  const [cameraModel, setCameraModel] = useState(photos[0]?.camera?.model || "");
-  const [lensModel, setLensModel] = useState(photos[0]?.camera?.lens || "");
-  const [focalLength, setFocalLength] = useState(photos[0]?.camera?.focalLength || "");
-  const [aperture, setAperture] = useState(photos[0]?.camera?.aperture || "");
-  const [shutter, setShutter] = useState(photos[0]?.camera?.shutter || "");
-  const [iso, setIso] = useState(photos[0]?.camera?.iso || "");
+  const initialPhoto = initialPhotoId && photos.find((p) => p.publicId === initialPhotoId);
+  const startingPhoto = initialPhoto || photos[0];
+  const [selectedPublicId, setSelectedPublicId] = useState(startingPhoto?.publicId || "");
+  const [title, setTitle] = useState(getPhotoTitle(startingPhoto || { title: "", titleEn: "" }));
+  const [description, setDescription] = useState(getPhotoDescription(startingPhoto || { description: "", descriptionEn: "" }));
+  const [selectedTags, setSelectedTags] = useState(normalizeSelectedCollectionTags(startingPhoto?.tags || []));
+  const [featured, setFeatured] = useState(startingPhoto?.featured || false);
+  const [takenAtInput, setTakenAtInput] = useState(toDateInputValue(startingPhoto?.takenAt));
+  const [cameraModel, setCameraModel] = useState(startingPhoto?.camera?.model || "");
+  const [lensModel, setLensModel] = useState(startingPhoto?.camera?.lens || "");
+  const [focalLength, setFocalLength] = useState(startingPhoto?.camera?.focalLength || "");
+  const [aperture, setAperture] = useState(startingPhoto?.camera?.aperture || "");
+  const [shutter, setShutter] = useState(startingPhoto?.camera?.shutter || "");
+  const [iso, setIso] = useState(startingPhoto?.camera?.iso || "");
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState("");
   const [saved, setSaved] = useState("");
+  const [deleteConfirmFor, setDeleteConfirmFor] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     const term = query.trim().toLowerCase();
-    const base = !term
-      ? items
-        : items.filter((photo) => {
-          const titleText = photo.title.toLowerCase();
-          const descriptionText = photo.description.toLowerCase();
-          const titleEnText = (photo.titleEn || "").toLowerCase();
-          const descriptionEnText = (photo.descriptionEn || "").toLowerCase();
-          return (
-            titleText.includes(term) ||
-            descriptionText.includes(term) ||
-            titleEnText.includes(term) ||
-            descriptionEnText.includes(term)
-          );
-        });
+    if (!term) {
+      return items;
+    }
 
-    return base;
+    return items.filter((photo) => {
+      const titleText = getPhotoTitle(photo).toLowerCase();
+      const descriptionText = getPhotoDescription(photo).toLowerCase();
+      return titleText.includes(term) || descriptionText.includes(term);
+    });
   }, [items, query]);
 
   const selected = useMemo(
@@ -113,13 +122,60 @@ export function AdminEditPhotos({ photos }: AdminEditPhotosProps) {
   );
   const selectedCameraRows = selected ? getCameraRows(selected) : [];
 
+  const isDirty = useMemo(() => {
+    if (!selected) {
+      return false;
+    }
+    const originalTitle = getPhotoTitle(selected);
+    const originalDescription = getPhotoDescription(selected);
+    const originalTags = normalizeSelectedCollectionTags(selected.tags);
+    const originalFeatured = selected.featured || false;
+    const originalTakenAt = toDateInputValue(selected.takenAt);
+    const originalCamera = selected.camera || {};
+
+    return (
+      title !== originalTitle ||
+      description !== originalDescription ||
+      JSON.stringify(selectedTags) !== JSON.stringify(originalTags) ||
+      featured !== originalFeatured ||
+      takenAtInput !== originalTakenAt ||
+      cameraModel !== (originalCamera.model || "") ||
+      lensModel !== (originalCamera.lens || "") ||
+      focalLength !== (originalCamera.focalLength || "") ||
+      aperture !== (originalCamera.aperture || "") ||
+      shutter !== (originalCamera.shutter || "") ||
+      iso !== (originalCamera.iso || "")
+    );
+  }, [selected, title, description, selectedTags, featured, takenAtInput, cameraModel, lensModel, focalLength, aperture, shutter, iso]);
+
+  useEffect(() => {
+    if (!isDirty) {
+      return;
+    }
+
+    function handleBeforeUnload(event: BeforeUnloadEvent) {
+      event.preventDefault();
+      event.returnValue = "";
+    }
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [isDirty]);
+
   function selectPhoto(photo: Photo) {
+    if (isDirty) {
+      const confirmed = window.confirm("You have unsaved changes. Discard them?");
+      if (!confirmed) {
+        return;
+      }
+    }
     setSelectedPublicId(photo.publicId);
-    setTitle(photo.title);
-    setDescription(photo.description);
-    setTitleEn(photo.titleEn || "");
-    setDescriptionEn(photo.descriptionEn || "");
-    setTagsInput(photo.tags.join(", "));
+    setTitle(getPhotoTitle(photo));
+    setDescription(getPhotoDescription(photo));
+    setSelectedTags(normalizeSelectedCollectionTags(photo.tags));
+    setFeatured(photo.featured || false);
     setTakenAtInput(toDateInputValue(photo.takenAt));
     setCameraModel(photo.camera?.model || "");
     setLensModel(photo.camera?.lens || "");
@@ -146,6 +202,7 @@ export function AdminEditPhotos({ photos }: AdminEditPhotosProps) {
 
     try {
       const normalizedTakenAt = fromDateInputValue(takenAtInput);
+      const normalizedTags = normalizeSelectedCollectionTags(selectedTags);
       const response = await fetch("/api/cloudinary/update", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -153,9 +210,10 @@ export function AdminEditPhotos({ photos }: AdminEditPhotosProps) {
           publicId: selected.publicId,
           title: title.trim(),
           description: description.trim(),
-          titleEn,
-          descriptionEn,
-          tags: normalizeTagsInput(tagsInput).join(","),
+          titleEn: title.trim(),
+          descriptionEn: description.trim(),
+          tags: normalizedTags.join(","),
+          featured,
           takenAt: takenAtInput,
           cameraModel,
           lensModel,
@@ -167,7 +225,8 @@ export function AdminEditPhotos({ photos }: AdminEditPhotosProps) {
       });
 
       if (!response.ok) {
-        throw new Error("Failed");
+        const errorText = await response.text();
+        throw new Error(errorText || "Failed");
       }
 
       setItems((prev) =>
@@ -177,9 +236,10 @@ export function AdminEditPhotos({ photos }: AdminEditPhotosProps) {
                 ...photo,
                 title: title.trim(),
                 description: description.trim(),
-                titleEn: titleEn.trim() || undefined,
-                descriptionEn: descriptionEn.trim() || undefined,
-                tags: normalizeTagsInput(tagsInput),
+                titleEn: title.trim() || undefined,
+                descriptionEn: description.trim() || undefined,
+                tags: normalizedTags,
+                featured,
                 takenAt: normalizedTakenAt || undefined,
                 camera: {
                   model: cameraModel.trim() || undefined,
@@ -194,25 +254,34 @@ export function AdminEditPhotos({ photos }: AdminEditPhotosProps) {
         )
       );
       setSaved("Saved.");
-    } catch {
-      setError("Could not save changes.");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Could not save changes.";
+      setError(message.includes("Network") ? "Network error. Check connection and retry." : message);
     } finally {
       setIsSaving(false);
     }
   }
 
-  async function handleDelete() {
+  function promptDelete() {
     if (!selected) {
       return;
     }
-    const confirmed = window.confirm("Delete this photo permanently?");
-    if (!confirmed) {
+    setDeleteConfirmFor(selected.publicId);
+  }
+
+  function cancelDelete() {
+    setDeleteConfirmFor(null);
+  }
+
+  async function confirmDelete() {
+    if (!selected || deleteConfirmFor !== selected.publicId) {
       return;
     }
 
     setIsDeleting(true);
     setError("");
     setSaved("");
+    setDeleteConfirmFor(null);
 
     try {
       const response = await fetch("/api/cloudinary/delete", {
@@ -222,7 +291,8 @@ export function AdminEditPhotos({ photos }: AdminEditPhotosProps) {
       });
 
       if (!response.ok) {
-        throw new Error("Failed");
+        const errorText = await response.text();
+        throw new Error(errorText || "Failed");
       }
 
       const remaining = items.filter((photo) => photo.publicId !== selected.publicId);
@@ -230,11 +300,10 @@ export function AdminEditPhotos({ photos }: AdminEditPhotosProps) {
       if (remaining.length > 0) {
         const next = remaining[0];
         setSelectedPublicId(next.publicId);
-        setTitle(next.title);
-        setDescription(next.description);
-        setTitleEn(next.titleEn || "");
-        setDescriptionEn(next.descriptionEn || "");
-        setTagsInput(next.tags.join(", "));
+        setTitle(getPhotoTitle(next));
+        setDescription(getPhotoDescription(next));
+        setSelectedTags(normalizeSelectedCollectionTags(next.tags));
+        setFeatured(next.featured || false);
         setTakenAtInput(toDateInputValue(next.takenAt));
         setCameraModel(next.camera?.model || "");
         setLensModel(next.camera?.lens || "");
@@ -246,9 +315,8 @@ export function AdminEditPhotos({ photos }: AdminEditPhotosProps) {
         setSelectedPublicId("");
         setTitle("");
         setDescription("");
-        setTitleEn("");
-        setDescriptionEn("");
-        setTagsInput("");
+        setSelectedTags([]);
+        setFeatured(false);
         setTakenAtInput("");
         setCameraModel("");
         setLensModel("");
@@ -258,8 +326,9 @@ export function AdminEditPhotos({ photos }: AdminEditPhotosProps) {
         setIso("");
       }
       setSaved("Deleted.");
-    } catch {
-      setError("Could not delete photo.");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Could not delete photo.";
+      setError(message.includes("Network") ? "Network error. Check connection and retry." : message);
     } finally {
       setIsDeleting(false);
     }
@@ -270,37 +339,48 @@ export function AdminEditPhotos({ photos }: AdminEditPhotosProps) {
   }
 
   return (
-    <section className="admin-edit-shell">
-      <aside className="admin-edit-sidebar card">
+    <section className={styles.editShell}>
+      <aside className={styles.editSidebar}>
         <input
-          className="input"
+          className={styles.input}
           type="search"
           placeholder="Search photos"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
         />
 
-        <div className="admin-edit-list">
+        <div className={styles.editListHeader}>
+          <p className={styles.editListCount}>
+            {filtered.length} {filtered.length === 1 ? "photo" : "photos"}
+          </p>
+        </div>
+
+        <div className={styles.editList}>
           {filtered.map((photo) => {
             const isActive = selected?.publicId === photo.publicId;
+            const photoTitle = getPhotoTitle(photo);
+
             return (
               <button
                 key={photo.publicId}
                 type="button"
-                className={`admin-edit-row${isActive ? " is-active" : ""}`}
+                className={`${styles.editRow} ${isActive ? styles.active : ""}`}
                 onClick={() => selectPhoto(photo)}
               >
-                <Image
-                  src={getSidebarThumbnail(photo.secureUrl)}
-                  alt={photo.title || "Untitled"}
-                  width={96}
-                  height={72}
-                  unoptimized
-                />
-                <span>
-                  <strong>{photo.title || "Untitled"}</strong>
-                  <small>{formatPhotoDate(getPhotoDisplayDateValue(photo), "pt-PT", "Desconhecido")}</small>
-                </span>
+                <div className={styles.editRowThumb}>
+                  <Image
+                    src={photo.secureUrl}
+                    alt={photoTitle}
+                    width={88}
+                    height={64}
+                    unoptimized
+                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                  />
+                </div>
+                <div className={styles.editRowMeta}>
+                  <h3 className={styles.editRowTitle}>{photoTitle}</h3>
+                  <p className={styles.editRowDate}>{formatPhotoDate(getPhotoDisplayDateValue(photo), "en-US", "Unknown")}</p>
+                </div>
               </button>
             );
           })}
@@ -308,101 +388,178 @@ export function AdminEditPhotos({ photos }: AdminEditPhotosProps) {
       </aside>
 
       {selected ? (
-        <form className="admin-edit-detail card" onSubmit={handleSave}>
-          <div className="admin-edit-preview">
-            <Image
-              src={selected.secureUrl}
-              alt={selected.title || "Untitled"}
-              width={1200}
-              height={900}
-              style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
-            />
+        <form className={styles.editDetail} onSubmit={handleSave}>
+          <Image
+            src={selected.secureUrl}
+            alt={getPhotoTitle(selected)}
+            width={1200}
+            height={900}
+            className={styles.editPreview}
+          />
+
+          <div className={styles.fieldGroup}>
+            <label className={styles.label} htmlFor="edit-title">Title</label>
+            <input id="edit-title" className={styles.input} type="text" value={title} onChange={(event) => setTitle(event.target.value)} />
           </div>
 
-          <label className="stack" style={{ gap: "0.35rem" }}>
-            Titulo em portugues
-            <input className="input" type="text" value={title} onChange={(event) => setTitle(event.target.value)} />
-          </label>
-
-          <label className="stack" style={{ gap: "0.35rem" }}>
-            Texto em portugues
+          <div className={styles.fieldGroup}>
+            <label className={styles.label} htmlFor="edit-description">Description</label>
             <textarea
-              className="textarea"
+              id="edit-description"
+              className={styles.textarea}
               value={description}
               onChange={(event) => setDescription(event.target.value)}
             />
-          </label>
-
-          <label className="stack" style={{ gap: "0.35rem" }}>
-            Title in English (optional)
-            <input className="input" type="text" value={titleEn} onChange={(event) => setTitleEn(event.target.value)} />
-          </label>
-
-          <label className="stack" style={{ gap: "0.35rem" }}>
-            Text in English (optional)
-            <textarea
-              className="textarea"
-              value={descriptionEn}
-              onChange={(event) => setDescriptionEn(event.target.value)}
-            />
-          </label>
-
-          <label className="stack" style={{ gap: "0.35rem" }}>
-            Tags (optional, comma separated)
-            <input
-              className="input"
-              type="text"
-              value={tagsInput}
-              onChange={(event) => setTagsInput(event.target.value)}
-            />
-          </label>
-
-          <label className="stack" style={{ gap: "0.35rem" }}>
-            Data da foto (opcional)
-            <input className="input" type="date" value={takenAtInput} onChange={(event) => setTakenAtInput(event.target.value)} />
-          </label>
-
-          <div className="stack" style={{ gap: "0.5rem" }}>
-            <strong style={{ fontSize: "0.92rem" }}>Dados da camera (editavel)</strong>
-            <input className="input" type="text" placeholder="Modelo da camera" value={cameraModel} onChange={(event) => setCameraModel(event.target.value)} />
-            <input className="input" type="text" placeholder="Modelo da lente" value={lensModel} onChange={(event) => setLensModel(event.target.value)} />
-            <input className="input" type="text" placeholder="Distancia focal (ex. 35mm)" value={focalLength} onChange={(event) => setFocalLength(event.target.value)} />
-            <input className="input" type="text" placeholder="Abertura (ex. f/2.8)" value={aperture} onChange={(event) => setAperture(event.target.value)} />
-            <input className="input" type="text" placeholder="Velocidade (ex. 1/125)" value={shutter} onChange={(event) => setShutter(event.target.value)} />
-            <input className="input" type="text" placeholder="ISO" value={iso} onChange={(event) => setIso(event.target.value)} />
           </div>
 
-          <div className="admin-meta-block">
-            <p style={{ margin: 0, color: "var(--muted)" }}>
-              Data da foto: {formatPhotoDate(getPhotoDisplayDateValue(selected), "pt-PT", "Desconhecido")}
+          <div className={styles.fieldGroup}>
+            <label className={styles.label}>Collections</label>
+            <div className={styles.tagGrid}>
+              {TAGGED_COLLECTIONS.map((collection) => (
+                <label key={collection.slug} className={styles.tagOption}>
+                  <input
+                    type="checkbox"
+                    checked={selectedTags.includes(collection.slug)}
+                    onChange={() => setSelectedTags((prev) => toggleCollectionTag(prev, collection.slug))}
+                  />
+                  <span>{collection.name}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <label className={styles.tagOption}>
+            <input
+              type="checkbox"
+              checked={featured}
+              onChange={(event) => setFeatured(event.target.checked)}
+            />
+            <span>Show on home page (Featured)</span>
+          </label>
+
+          <div className={styles.fieldGroup}>
+            <label className={styles.label} htmlFor="edit-date">Photo date (optional)</label>
+            <input id="edit-date" className={styles.input} type="date" value={takenAtInput} onChange={(event) => setTakenAtInput(event.target.value)} />
+          </div>
+
+          <div style={{ display: "grid", gap: "2rem" }}>
+            <div>
+              <p className={styles.metaLabel} style={{ marginBottom: "1rem" }}>Camera and Lens</p>
+              <div style={{ display: "grid", gap: "1rem" }}>
+                <div className={styles.fieldGroup}>
+                  <label className={styles.label} htmlFor="edit-camera-model">Camera model</label>
+                  <input id="edit-camera-model" className={styles.input} type="text" placeholder="Canon EOS R5" value={cameraModel} onChange={(event) => setCameraModel(event.target.value)} />
+                </div>
+                <div className={styles.fieldGroup}>
+                  <label className={styles.label} htmlFor="edit-lens-model">Lens</label>
+                  <input id="edit-lens-model" className={styles.input} type="text" placeholder="RF 50mm f/1.2" value={lensModel} onChange={(event) => setLensModel(event.target.value)} />
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <p className={styles.metaLabel} style={{ marginBottom: "1rem" }}>Exposure Settings</p>
+              <div style={{ display: "grid", gap: "1rem", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))" }}>
+                <div className={styles.fieldGroup}>
+                  <label className={styles.label} htmlFor="edit-focal-length">Focal length</label>
+                  <input id="edit-focal-length" className={styles.input} type="text" placeholder="50mm" value={focalLength} onChange={(event) => setFocalLength(event.target.value)} />
+                </div>
+                <div className={styles.fieldGroup}>
+                  <label className={styles.label} htmlFor="edit-aperture">Aperture</label>
+                  <input id="edit-aperture" className={styles.input} type="text" placeholder="f/2.8" value={aperture} onChange={(event) => setAperture(event.target.value)} />
+                </div>
+                <div className={styles.fieldGroup}>
+                  <label className={styles.label} htmlFor="edit-shutter">Shutter speed</label>
+                  <input id="edit-shutter" className={styles.input} type="text" placeholder="1/125" value={shutter} onChange={(event) => setShutter(event.target.value)} />
+                </div>
+                <div className={styles.fieldGroup}>
+                  <label className={styles.label} htmlFor="edit-iso">ISO</label>
+                  <input id="edit-iso" className={styles.input} type="text" placeholder="400" value={iso} onChange={(event) => setIso(event.target.value)} />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className={styles.metaBlock}>
+            <p className={styles.metaLabel}>
+              Photo date: {formatPhotoDate(getPhotoDisplayDateValue(selected), "en-US", "Unknown")}
             </p>
             {selectedCameraRows.map((row) => (
-              <p key={row.label} style={{ margin: 0, color: "var(--muted)" }}>
+              <p key={row.label} className={styles.metaLabel}>
                 {row.label}: {row.value}
               </p>
             ))}
           </div>
 
-          <div style={{ display: "flex", gap: "0.7rem", flexWrap: "wrap", alignItems: "center" }}>
-            <button className="button" type="submit" disabled={isSaving || isDeleting}>
-              {isSaving ? "Saving..." : "Save"}
-            </button>
-            <Link className="button secondary" href={toPhotoHref(selected.publicId)}>
-              View
-            </Link>
-            <button
-              className="button secondary"
-              type="button"
-              onClick={handleDelete}
-              disabled={isSaving || isDeleting}
-              style={{ borderColor: "#d9b4b4", color: "#7a2222" }}
-            >
-              {isDeleting ? "Deleting..." : "Delete"}
-            </button>
-            {saved ? <span style={{ color: "#2f6944" }}>{saved}</span> : null}
-            {error ? <span style={{ color: "#b62525" }}>{error}</span> : null}
+          <div className={styles.editActions}>
+            <div style={{ display: "flex", gap: "1rem", alignItems: "center", flexWrap: "wrap" }}>
+              <button className={`${styles.button} ${styles.buttonPrimary}`} type="submit" disabled={isSaving || isDeleting}>
+                {isSaving ? "Saving..." : "Save Changes"}
+              </button>
+              <button
+                className={styles.button}
+                type="button"
+                onClick={promptDelete}
+                disabled={isSaving || isDeleting}
+                style={{ borderColor: "oklch(85% 0.03 25)", color: "oklch(40% 0.08 25)" }}
+              >
+                {isDeleting ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+            <div style={{ display: "flex", gap: "1rem", alignItems: "center", flexWrap: "wrap" }}>
+              {isDirty ? <p className={styles.editFeedback} style={{ color: "oklch(45% 0.08 40)", margin: 0 }}>Unsaved changes</p> : null}
+              {saved ? <p className={styles.editFeedback} style={{ color: "oklch(35% 0.05 140)", margin: 0 }}>{saved}</p> : null}
+              {error ? <p className={styles.editFeedback} style={{ color: "oklch(45% 0.15 25)", margin: 0 }}>{error}</p> : null}
+            </div>
           </div>
         </form>
+      ) : null}
+
+      {deleteConfirmFor && selected && deleteConfirmFor === selected.publicId ? (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 1001,
+            background: "oklch(0% 0 0 / 0.65)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "1.5rem"
+          }}
+          onClick={cancelDelete}
+        >
+          <div
+            style={{
+              background: "var(--card)",
+              borderRadius: "10px",
+              padding: "2rem",
+              maxWidth: "420px",
+              width: "100%",
+              display: "grid",
+              gap: "1.5rem"
+            }}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h2 style={{ margin: 0, fontSize: "1.3rem", fontWeight: 400 }}>Delete Photo?</h2>
+            <p style={{ margin: 0, color: "var(--muted)", lineHeight: 1.5 }}>
+              Permanently delete <strong style={{ color: "var(--text)" }}>{getPhotoTitle(selected)}</strong>? This cannot be undone.
+            </p>
+            <div style={{ display: "flex", gap: "0.75rem", justifyContent: "flex-end" }}>
+              <button className={styles.button} type="button" onClick={cancelDelete}>
+                Cancel
+              </button>
+              <button
+                className={styles.button}
+                type="button"
+                onClick={confirmDelete}
+                style={{ borderColor: "oklch(85% 0.03 25)", color: "oklch(40% 0.08 25)" }}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
       ) : null}
     </section>
   );

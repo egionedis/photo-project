@@ -4,8 +4,9 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { buildCloudinaryContext } from "@/lib/metadata";
-import { normalizeTagsInput } from "@/lib/tags";
 import exifr from "exifr";
+import { TAGGED_COLLECTIONS } from "@/lib/collections";
+import styles from "../app/admin/admin.module.css";
 
 type SignatureResponse = {
   signature: string;
@@ -32,6 +33,17 @@ type ExifMetadata = {
 };
 
 const DEFAULT_CAMERA_MODEL = "Nikon D90";
+
+function normalizeSelectedCollectionTags(tags: string[]): string[] {
+  return TAGGED_COLLECTIONS.map((collection) => collection.slug).filter((slug) => tags.includes(slug));
+}
+
+function toggleCollectionTag(tags: string[], tag: string): string[] {
+  if (tags.includes(tag)) {
+    return tags.filter((value) => value !== tag);
+  }
+  return normalizeSelectedCollectionTags([...tags, tag]);
+}
 
 function firstNonEmpty(values: Array<unknown>): string | undefined {
   for (const value of values) {
@@ -291,7 +303,7 @@ export function AdminUploadForm() {
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [tagsInput, setTagsInput] = useState("");
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [takenAtISO, setTakenAtISO] = useState<string | null>(null);
   const [cameraExif, setCameraExif] = useState<Omit<ExifMetadata, "takenAtISO">>({
     cameraModel: DEFAULT_CAMERA_MODEL
@@ -352,7 +364,7 @@ export function AdminUploadForm() {
     setFile(null);
     setTitle("");
     setDescription("");
-    setTagsInput("");
+    setSelectedTags([]);
     setTakenAtISO(null);
     setCameraExif({
       cameraModel: DEFAULT_CAMERA_MODEL
@@ -383,6 +395,8 @@ export function AdminUploadForm() {
     const context = buildCloudinaryContext({
       title: title.trim(),
       description: description.trim(),
+      title_en: title.trim(),
+      description_en: description.trim(),
       taken_at: takenAtISO || undefined,
       camera_model: cameraExif.cameraModel,
       lens_model: cameraExif.lensModel,
@@ -391,7 +405,7 @@ export function AdminUploadForm() {
       shutter: cameraExif.shutter,
       iso: cameraExif.iso
     });
-    const normalizedTags = normalizeTagsInput(tagsInput);
+    const normalizedTags = normalizeSelectedCollectionTags(selectedTags);
 
     try {
       const signResponse = await fetch("/api/cloudinary/sign", {
@@ -472,14 +486,14 @@ export function AdminUploadForm() {
 
   if (success) {
     return (
-      <section className="admin-upload-shell">
-        <div className="admin-upload-success card">
+      <section>
+        <div className={styles.successBanner}>
           <p style={{ margin: 0 }}>Uploaded.</p>
-          <div style={{ display: "flex", gap: "0.7rem", flexWrap: "wrap" }}>
-            <Link className="button secondary" href={success.href}>
+          <div style={{ display: "flex", gap: "0.7rem", flexWrap: "wrap", marginTop: "0.75rem" }}>
+            <Link className={styles.button} href={success.href}>
               View photo
             </Link>
-            <button className="button" type="button" onClick={resetAll}>
+            <button className={styles.button} type="button" onClick={resetAll}>
               Upload another
             </button>
           </div>
@@ -489,19 +503,19 @@ export function AdminUploadForm() {
   }
 
   return (
-    <form className="admin-upload-shell" onSubmit={handleUpload}>
-      <section className="admin-upload-grid">
-        <div className="admin-upload-left card">
+    <form onSubmit={handleUpload}>
+      <section className={styles.uploadGrid}>
+        <div className={styles.uploadLeft}>
           <input
             ref={fileInputRef}
             type="file"
             accept="image/*"
-            className="admin-upload-hidden-input"
+            className={styles.hiddenInput}
             onChange={(event) => handleFileSelection(event.target.files?.[0] ?? null)}
           />
 
           <button
-            className={`admin-dropzone${isDragging ? " is-dragging" : ""}`}
+            className={styles.dropzone}
             type="button"
             onClick={() => fileInputRef.current?.click()}
             onDragOver={(event) => {
@@ -515,39 +529,44 @@ export function AdminUploadForm() {
               handleFileSelection(event.dataTransfer.files?.[0] ?? null);
             }}
           >
-            <span>{file ? "Replace file" : "Drop image here or click to select"}</span>
+            <p className={styles.dropzoneText}>
+              {file ? "Replace file" : "Drop image here or click to select"}
+            </p>
           </button>
 
           {file && previewUrl ? (
-            <div className="admin-preview-block">
+            <div className={styles.previewBlock}>
               <Image
                 src={previewUrl}
                 alt="Selected preview"
-                className="admin-preview-image"
+                className={styles.previewImage}
                 width={500}
                 height={500}
                 unoptimized
               />
-              <p style={{ margin: 0 }}>
+              <p style={{ margin: 0, fontSize: "0.95rem", color: "var(--muted)" }}>
                 {file.name} ({formatBytes(file.size)})
               </p>
             </div>
           ) : null}
 
-          <p style={{ margin: 0, color: "var(--muted)" }}>
+          <p style={{ margin: 0, color: "var(--muted)", fontSize: "0.95rem" }}>
             Date taken: {isParsingExif ? "Reading EXIF..." : formatTakenAt(takenAtISO)}
           </p>
-          <p style={{ margin: 0, color: "var(--muted)" }}>
+          <p style={{ margin: 0, color: "var(--muted)", fontSize: "0.95rem" }}>
             Camera model:{" "}
             {isParsingExif ? "Reading EXIF..." : cameraExif.cameraModel || "Not found"}
           </p>
         </div>
 
-        <div className="admin-upload-right card">
-          <label className="stack" style={{ gap: "0.35rem" }}>
-            Title
+        <div className={styles.uploadRight}>
+          <div className={styles.fieldGroup}>
+            <label className={styles.label} htmlFor="photo-title">
+              Title
+            </label>
             <input
-              className="input"
+              id="photo-title"
+              className={styles.input}
               type="text"
               value={title}
               onChange={(event) => setTitle(event.target.value)}
@@ -556,38 +575,46 @@ export function AdminUploadForm() {
               autoCapitalize="sentences"
               required
             />
-          </label>
+          </div>
 
-          <label className="stack" style={{ gap: "0.35rem" }}>
-            Description
+          <div className={styles.fieldGroup}>
+            <label className={styles.label} htmlFor="photo-description">
+              Description
+            </label>
             <textarea
-              className="textarea"
+              id="photo-description"
+              className={styles.textarea}
               value={description}
               onChange={(event) => setDescription(event.target.value)}
               spellCheck
               autoCorrect="on"
               autoCapitalize="sentences"
             />
-          </label>
+          </div>
 
-          <label className="stack" style={{ gap: "0.35rem" }}>
-            Tags (optional, comma separated)
-            <input
-              className="input"
-              type="text"
-              value={tagsInput}
-              onChange={(event) => setTagsInput(event.target.value)}
-              placeholder="sweden, london, architecture"
-            />
-          </label>
+          <div className={styles.fieldGroup}>
+            <label className={styles.label}>Collections</label>
+            <div className={styles.tagGrid}>
+              {TAGGED_COLLECTIONS.map((collection) => (
+                <label key={collection.slug} className={styles.tagOption}>
+                  <input
+                    type="checkbox"
+                    checked={selectedTags.includes(collection.slug)}
+                    onChange={() => setSelectedTags((prev) => toggleCollectionTag(prev, collection.slug))}
+                  />
+                  <span>{collection.name}</span>
+                </label>
+              ))}
+            </div>
+          </div>
 
-          <div className="stack" style={{ gap: "0.5rem" }}>
-            <p style={{ margin: 0, color: "var(--muted)" }}>Camera metadata (editable)</p>
-            <label className="stack" style={{ gap: "0.35rem" }}>
-              Camera model
+          <div className={styles.fieldGroup}>
+            <label className={styles.label}>Camera metadata (editable)</label>
+            <div className={styles.fieldGroup}>
               <input
-                className="input"
+                className={styles.input}
                 type="text"
+                placeholder="Camera model"
                 value={cameraExif.cameraModel || ""}
                 onChange={(event) =>
                   setCameraExif((prev) => ({
@@ -596,12 +623,12 @@ export function AdminUploadForm() {
                   }))
                 }
               />
-            </label>
+            </div>
           </div>
 
-          {error ? <p style={{ color: "#b62525", margin: 0 }}>{error}</p> : null}
+          {error ? <p style={{ color: "oklch(45% 0.15 25)", margin: 0, fontSize: "0.95rem" }}>{error}</p> : null}
 
-          <button className="button" type="submit" disabled={isUploading || isParsingExif}>
+          <button className={`${styles.button} ${styles.buttonPrimary}`} type="submit" disabled={isUploading || isParsingExif}>
             {isUploading ? "Uploading..." : "Upload"}
           </button>
         </div>

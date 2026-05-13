@@ -1,0 +1,589 @@
+/* Admin interface - product register */
+
+.page {
+  min-height: calc(100vh - 5.25rem);
+  padding: clamp(2rem, 4vh, 3rem) 0 clamp(3rem, 5vh, 5rem);
+  background: #ffffff;
+}
+
+.shell {
+  width: min(1440px, calc(100% - 3rem));
+  margin: 0 auto;
+  display: grid;
+  gap: clamp(1.8rem, 3vh, 2.5rem);
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding-bottom: clamp(1rem, 2vh, 1.5rem);
+  border-bottom: 1px solid var(--line);
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(1.8rem, 3vw, 2.2rem);
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  color: var(--text);
+}
+
+/* Navigation tabs */
+.nav {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.navLink {
+  position: relative;
+  padding: 0.9rem 1.8rem;
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--muted);
+  text-decoration: none;
+  transition: all 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  border-bottom: 2px solid transparent;
+}
+
+.navLink:hover {
+  color: var(--text);
+  background: oklch(98% 0.002 165);
+}
+
+.navLink.active {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+}
+
+.navLink:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+/* Upload page */
+.uploadGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: start;
+}
+
+.uploadLeft {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.uploadRight {
+  display: grid;
+  gap: 2rem;
+}
+
+.dropzone {
+  padding: clamp(2.5rem, 5vh, 4rem) 2rem;
+  border: 2px dashed var(--line);
+  border-radius: 14px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  background: #ffffff;
+}
+
+.dropzone:hover {
+  border-color: var(--accent);
+  background: oklch(98.5% 0.005 165);
+}
+
+.dropzone:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -4px;
+}
+
+.dropzone:active {
+  transform: scale(0.995);
+}
+
+.dropzoneText {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--muted);
+}
+
+.previewBlock {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.previewImage {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  background: oklch(96% 0 0);
+}
+
+.successBanner {
+  padding: 1.1rem 1.3rem;
+  background: oklch(96% 0.015 140);
+  border: 1px solid oklch(88% 0.025 140);
+  border-radius: 10px;
+  color: oklch(28% 0.045 140);
+  font-size: 1rem;
+}
+
+.hiddenInput {
+  display: none;
+}
+
+/* Edit page */
+.editShell {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: clamp(3rem, 5vw, 5rem);
+  align-items: start;
+}
+
+.editSidebar {
+  position: sticky;
+  top: 6.5rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.editListHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 0.25rem;
+}
+
+.editListCount {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--muted);
+  letter-spacing: 0.01em;
+}
+
+.editList {
+  max-height: calc(100vh - 14rem);
+  overflow-y: auto;
+  border: none;
+  border-radius: 10px;
+  background: #ffffff;
+  display: grid;
+  gap: 0;
+  box-shadow: 0 0 0 1px oklch(96% 0 0);
+}
+
+.editRow {
+  /* Reset button styling */
+  appearance: none;
+  -webkit-appearance: none;
+  border: 0;
+  border-bottom: 1px solid oklch(96.5% 0 0);
+  border-radius: 0;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  width: 100%;
+
+  /* Custom styling */
+  display: grid;
+  grid-template-columns: 88px 1fr;
+  gap: 0.75rem;
+  padding: 0.6rem 0.7rem;
+  cursor: pointer;
+  transition: all 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  align-items: center;
+  text-align: left;
+}
+
+.editRow:hover {
+  background: oklch(98.5% 0.002 165);
+}
+
+.editRow.active {
+  background: oklch(97% 0.01 165);
+  border-left: 4px solid oklch(44% 0.04 165);
+  padding-left: calc(0.7rem - 4px);
+}
+
+.editRow:last-child {
+  border-bottom: none;
+}
+
+.editRowThumb {
+  width: 88px;
+  height: 64px;
+  border-radius: 7px;
+  overflow: hidden;
+  background: oklch(97% 0 0);
+  flex-shrink: 0;
+}
+
+.editRowThumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.editRowMeta {
+  display: grid;
+  gap: 0.35rem;
+  align-content: start;
+}
+
+.editRowTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--text);
+  line-height: 1.3;
+}
+
+.editRowDate {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.editDetail {
+  display: grid;
+  gap: 2rem;
+  position: relative;
+  padding-bottom: 1rem;
+  max-width: 840px;
+}
+
+.editPreview {
+  width: 100%;
+  max-width: 720px;
+  height: auto;
+  border-radius: 10px;
+  background: oklch(96% 0 0);
+}
+
+.editActions {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: 2.5rem 0 0;
+  background: linear-gradient(180deg, transparent, #ffffff 20%, #ffffff);
+  margin: 0;
+  border-top: 1px solid oklch(94% 0 0);
+}
+
+.editFeedback {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.metaBlock {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.metaLabel {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+}
+
+/* Order page */
+.orderTopbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.orderSummary {
+  font-size: 0.98rem;
+  color: var(--muted);
+}
+
+.orderGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1rem;
+}
+
+.orderTile {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border: 2px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: grab;
+  background: oklch(97% 0 0);
+  transition: all 180ms ease;
+}
+
+.orderTile.active {
+  border-color: var(--accent);
+  box-shadow: 0 6px 20px oklch(0% 0 0 / 0.12);
+}
+
+.orderTile:hover {
+  border-color: oklch(75% 0 0);
+}
+
+.orderMeta {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 0.65rem 0.8rem;
+  background: linear-gradient(180deg, transparent, oklch(8% 0.002 165 / 0.85));
+  color: oklch(98% 0.003 165);
+  font-size: 0.88rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.orderInput {
+  width: 70px;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.92rem;
+  background: oklch(98% 0 0 / 0.92);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.unsavedBanner {
+  padding: 0.75rem 1.1rem;
+  background: oklch(96% 0.025 60);
+  border: 1px solid oklch(88% 0.035 60);
+  border-radius: 10px;
+  color: oklch(28% 0.055 60);
+  font-size: 0.98rem;
+}
+
+/* Form elements */
+.fieldGroup {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.label {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: var(--text);
+  letter-spacing: 0.01em;
+}
+
+.input,
+.textarea {
+  font-family: var(--font-garamond);
+  font-size: 1rem;
+  padding: 1.1rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #ffffff;
+  color: var(--text);
+  outline: none;
+  transition: all 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.input:hover:not(:disabled):not(:focus) {
+  border-color: oklch(80% 0 0);
+}
+
+.input:focus,
+.textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px oklch(44% 0.04 165 / 0.12);
+}
+
+.input:disabled,
+.textarea:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: oklch(97% 0 0);
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 100px;
+  line-height: 1.5;
+}
+
+.button {
+  font-family: var(--font-garamond);
+  font-size: 1.0625rem;
+  font-weight: 400;
+  padding: 1.1rem 1.75rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #ffffff;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.button:hover:not(:disabled) {
+  background: oklch(97.5% 0.002 165);
+  border-color: oklch(75% 0 0);
+}
+
+.button:active:not(:disabled) {
+  transform: scale(0.98);
+  background: oklch(96% 0.003 165);
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.buttonPrimary {
+  background: var(--accent);
+  color: oklch(99% 0.002 165);
+  border: none;
+}
+
+.buttonPrimary:hover:not(:disabled) {
+  background: oklch(40% 0.04 165);
+}
+
+.buttonPrimary:active:not(:disabled) {
+  transform: scale(0.98);
+  background: oklch(38% 0.045 165);
+}
+
+.tagGrid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+
+.tagOption {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--line);
+  background: #ffffff;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.tagOption:hover {
+  background: oklch(98.2% 0.002 165);
+  border-color: oklch(78% 0 0);
+}
+
+.tagOption:has(input:checked) {
+  background: oklch(97% 0.008 165);
+  border-color: var(--accent);
+}
+
+.tagOption:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.tagOption input {
+  margin: 0;
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+}
+
+/* Reduced motion - applied to individual classes in transitions */
+@media (prefers-reduced-motion: reduce) {
+  .button,
+  .input,
+  .textarea,
+  .dropzone,
+  .tagOption,
+  .navLink,
+  .editRow,
+  .orderTile {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Mobile */
+@media (max-width: 767px) {
+  .shell {
+    width: calc(100% - 2rem);
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .title {
+    font-size: 1.6rem;
+  }
+
+  .nav {
+    overflow-x: auto;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .navLink {
+    padding: 0.8rem 1.3rem;
+    font-size: 0.95rem;
+    white-space: nowrap;
+  }
+
+  .uploadGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .editShell {
+    grid-template-columns: 1fr;
+  }
+
+  .editSidebar {
+    position: static;
+  }
+
+  .editList {
+    max-height: 420px;
+  }
+
+  .editRowTitle {
+    font-size: 0.95rem;
+  }
+
+  .editRowDate {
+    font-size: 0.85rem;
+  }
+
+  .editActions {
+    position: static;
+    background: transparent;
+    padding: 2rem 0 0;
+    margin: 0;
+  }
+
+  .orderGrid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+}

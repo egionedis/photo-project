@@ -18,6 +18,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { Photo } from "@/lib/types";
+import styles from "../app/admin/admin.module.css";
 import { formatPhotoDate, getPhotoDisplayDateValue } from "@/lib/photo-date";
 
 const PAGE_SIZE = 100;
@@ -56,23 +57,22 @@ function SortableTile({ photo }: TileProps) {
         transform: CSS.Transform.toString(transform),
         transition
       }}
-      className={`order-tile${isDragging ? " is-dragging" : ""}`}
+      className={`${styles.orderTile} ${isDragging ? styles.active : ""}`}
     >
-      <div className="order-tile-image-wrap">
-        <Image
-          src={getThumb(photo.secureUrl)}
-          alt={photo.title || "Untitled"}
-          width={420}
-          height={300}
-          unoptimized
-          className="order-tile-image"
-        />
-        <button className="order-drag-handle" type="button" {...attributes} {...listeners} aria-label="Drag to reorder">
-          Drag
+      <Image
+        src={getThumb(photo.secureUrl)}
+        alt={photo.title || "Untitled"}
+        width={420}
+        height={300}
+        unoptimized
+        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+      />
+      <div className={styles.orderMeta}>
+        <button type="button" {...attributes} {...listeners} aria-label="Drag to reorder" style={{ all: "unset", cursor: "grab", marginRight: "0.5rem" }}>
+          ⋮⋮
         </button>
+        <span>{photo.title || "Untitled"}</span>
       </div>
-      <h3>{photo.title || "Untitled"}</h3>
-      <p>{formatPhotoDate(getPhotoDisplayDateValue(photo))}</p>
     </article>
   );
 }
@@ -239,35 +239,38 @@ export function AdminOrderGridDnD() {
   }
 
   return (
-    <section className="admin-order-dnd-shell">
-      <div className="admin-order-topbar">
-        <h2>Gallery Order</h2>
-        <input
-          className="input"
-          type="search"
-          placeholder="Search title or description"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-        />
-        <button className="button secondary" type="button" onClick={applyChronologicalOrder} disabled={isLoading || !items.length}>
-          Chronological
-        </button>
-        <button className="button" type="button" onClick={saveOrdering} disabled={isSaving || !hasUnsavedChanges}>
-          {isSaving ? "Saving..." : "Save"}
-        </button>
-        {hasUnsavedChanges ? <span className="admin-order-unsaved">Unsaved changes</span> : null}
+    <section>
+      <div className={styles.orderTopbar}>
+        <h2 style={{ margin: 0, fontSize: "1.3rem", fontWeight: 400 }}>Gallery Order</h2>
+        <div style={{ display: "flex", gap: "1rem", alignItems: "center", flexWrap: "wrap" }}>
+          <input
+            className={styles.input}
+            type="search"
+            placeholder="Search photos"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            style={{ minWidth: "220px" }}
+          />
+          <button className={styles.button} type="button" onClick={applyChronologicalOrder} disabled={isLoading || !items.length}>
+            Chronological
+          </button>
+          <button className={`${styles.button} ${styles.buttonPrimary}`} type="button" onClick={saveOrdering} disabled={isSaving || !hasUnsavedChanges}>
+            {isSaving ? "Saving..." : "Save"}
+          </button>
+          {hasUnsavedChanges ? <span className={styles.unsavedBanner}>Unsaved changes</span> : null}
+        </div>
       </div>
 
-      <p className="admin-order-summary">
+      <p className={styles.orderSummary}>
         Showing {items.length} of {total} photos
       </p>
 
-      {status ? <p style={{ color: "#2f6944", margin: 0 }}>{status}</p> : null}
-      {error ? <p style={{ color: "#b62525", margin: 0 }}>{error}</p> : null}
+      {status ? <p style={{ color: "oklch(35% 0.05 140)", margin: 0, fontSize: "0.95rem" }}>{status}</p> : null}
+      {error ? <p style={{ color: "oklch(45% 0.15 25)", margin: 0, fontSize: "0.95rem" }}>{error}</p> : null}
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={ids} strategy={rectSortingStrategy}>
-          <div className="admin-order-grid">
+          <div className={styles.orderGrid}>
             {items.map((photo) => (
               <SortableTile key={photo.publicId} photo={photo} />
             ))}
@@ -276,7 +279,7 @@ export function AdminOrderGridDnD() {
       </DndContext>
 
       {nextOffset !== null ? (
-        <button className="button secondary" type="button" onClick={() => fetchFeed(nextOffset, true)} disabled={isLoading}>
+        <button className={styles.button} type="button" onClick={() => fetchFeed(nextOffset, true)} disabled={isLoading}>
           {isLoading ? "Loading..." : "Load more"}
         </button>
       ) : null}

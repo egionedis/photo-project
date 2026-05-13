@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import styles from "../app/admin/admin.module.css";
 
 export function AdminLoginForm() {
   const router = useRouter();
@@ -35,24 +36,29 @@ export function AdminLoginForm() {
   }
 
   return (
-    <form className="card stack" style={{ maxWidth: "460px", padding: "1rem" }} onSubmit={handleSubmit}>
-      <h1 style={{ margin: 0 }}>Admin Login</h1>
-      <label className="stack" style={{ gap: "0.4rem" }}>
-        Password
-        <input
-          className="input"
-          name="password"
-          type="password"
-          autoComplete="current-password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          required
-        />
-      </label>
-      {error ? <p style={{ color: "#b62525", margin: 0 }}>{error}</p> : null}
-      <button className="button" type="submit" disabled={isLoading}>
-        {isLoading ? "Signing in..." : "Sign in"}
-      </button>
-    </form>
+    <div className={styles.page}>
+      <form style={{ maxWidth: "420px", margin: "0 auto", display: "grid", gap: "1.5rem" }} onSubmit={handleSubmit}>
+        <h1 style={{ margin: 0, fontSize: "1.8rem", fontWeight: 400 }}>Admin Login</h1>
+        <div className={styles.fieldGroup}>
+          <label className={styles.label} htmlFor="login-password">
+            Password
+          </label>
+          <input
+            id="login-password"
+            className={styles.input}
+            name="password"
+            type="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            required
+          />
+        </div>
+        {error ? <p style={{ color: "oklch(45% 0.15 25)", margin: 0, fontSize: "0.95rem" }}>{error}</p> : null}
+        <button className={`${styles.button} ${styles.buttonPrimary}`} type="submit" disabled={isLoading}>
+          {isLoading ? "Signing in..." : "Sign in"}
+        </button>
+      </form>
+    </div>
   );
 }
