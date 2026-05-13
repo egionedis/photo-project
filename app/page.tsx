@@ -28,7 +28,7 @@ export default async function HomePage() {
   const featuredPhotos = getFeaturedPhotos(photos);
 
   return (
-    <section className={styles.obsidianHomePage}>
+    <section className={`${styles.obsidianHomePage} obsidian-home-page`}>
       <HomeGallery photos={featuredPhotos} />
     </section>
   );
