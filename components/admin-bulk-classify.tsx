@@ -99,7 +99,12 @@ export function AdminBulkClassify({ photos }: Props) {
       }
 
       const data = await response.json();
-      setSuccess(`Updated ${data.updated} photo${data.updated !== 1 ? "s" : ""}. Refresh page to see changes.`);
+      setSuccess(`Updated ${data.updated} photo${data.updated !== 1 ? "s" : ""}`);
+
+      // Auto-reload to show updated tags
+      setTimeout(() => {
+        window.location.reload();
+      }, 800);
     } catch (err) {
       const errorMessage = err instanceof Error && err.message
         ? err.message
