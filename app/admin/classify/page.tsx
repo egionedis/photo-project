@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { AdminNav } from "@/components/admin-nav";
 import { AdminLogoutButton } from "@/components/admin-logout-button";
 import { AdminBulkClassify } from "@/components/admin-bulk-classify";
+import { AdminRebuildButton } from "@/components/admin-rebuild-button";
 import { getGalleryPhotos } from "@/lib/cloudinary";
 import styles from "../admin.module.css";
 
@@ -21,7 +22,10 @@ export default async function AdminClassifyPage() {
       <div className={styles.shell}>
         <header className={styles.header}>
           <h1 className={styles.title}>Admin</h1>
-          <AdminLogoutButton />
+          <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+            <AdminRebuildButton />
+            <AdminLogoutButton />
+          </div>
         </header>
 
         <AdminNav current="classify" />
