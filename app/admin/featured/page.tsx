@@ -4,6 +4,7 @@ import { AdminNav } from "@/components/admin-nav";
 import { AdminLogoutButton } from "@/components/admin-logout-button";
 import { AdminFeaturedPhotos } from "@/components/admin-featured-photos";
 import { getGalleryPhotos } from "@/lib/cloudinary";
+import { getFeaturedPhotos } from "@/lib/collections";
 import styles from "../admin.module.css";
 
 export default async function AdminFeaturedPage() {
@@ -15,7 +16,8 @@ export default async function AdminFeaturedPage() {
   }
 
   const allPhotos = await getGalleryPhotos();
-  const featuredPhotos = allPhotos.filter((photo) => photo.featured);
+  const hasFeaturedPhotos = allPhotos.some((photo) => photo.featured);
+  const featuredPhotos = hasFeaturedPhotos ? getFeaturedPhotos(allPhotos) : [];
 
   return (
     <main className={styles.page}>

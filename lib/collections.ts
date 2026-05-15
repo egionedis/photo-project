@@ -100,6 +100,11 @@ export function getFeaturedPhotos(photos: Photo[]): Photo[] {
   if (featuredPhotos.length > 0) {
     return featuredPhotos
       .sort((a, b) => {
+        if (a.featuredOrder !== undefined && b.featuredOrder !== undefined) {
+          return a.featuredOrder - b.featuredOrder;
+        }
+        if (a.featuredOrder !== undefined) return -1;
+        if (b.featuredOrder !== undefined) return 1;
         if (a.sortOrder !== undefined && b.sortOrder !== undefined) {
           return a.sortOrder - b.sortOrder;
         }

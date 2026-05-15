@@ -127,6 +127,9 @@ function mapResourceToPhoto(resource: CloudinaryResource): Photo {
   const sortOrderRaw = context.sort_order?.trim() || context.display_order?.trim();
   const parsedSortOrder = sortOrderRaw !== undefined ? Number(sortOrderRaw) : undefined;
   const sortOrder = Number.isFinite(parsedSortOrder) ? parsedSortOrder : undefined;
+  const featuredOrderRaw = context.featured_order?.trim();
+  const parsedFeaturedOrder = featuredOrderRaw !== undefined ? Number(featuredOrderRaw) : undefined;
+  const featuredOrder = Number.isFinite(parsedFeaturedOrder) ? parsedFeaturedOrder : undefined;
   const createdAt = resource.created_at || resource.uploaded_at || "";
   const uploadedAt = resource.uploaded_at || resource.created_at || "";
   const takenAt = context.taken_at?.trim() || undefined;
@@ -150,6 +153,7 @@ function mapResourceToPhoto(resource: CloudinaryResource): Photo {
     titleEn,
     descriptionEn,
     sortOrder,
+    featuredOrder,
     featured,
     takenAt,
     createdAt,
@@ -303,6 +307,7 @@ export async function updatePhotoMetadata(fields: {
   tags?: string[];
   featured?: boolean;
   sortOrder?: number | null;
+  featuredOrder?: number | null;
   takenAt?: string | null;
   cameraMake?: string | null;
   cameraModel?: string | null;
@@ -336,6 +341,9 @@ export async function updatePhotoMetadata(fields: {
   }
   if (fields.sortOrder !== undefined) {
     nextContextFields.sort_order = fields.sortOrder === null ? undefined : fields.sortOrder.toString();
+  }
+  if (fields.featuredOrder !== undefined) {
+    nextContextFields.featured_order = fields.featuredOrder === null ? undefined : fields.featuredOrder.toString();
   }
   if (fields.takenAt !== undefined) {
     nextContextFields.taken_at = fields.takenAt === null ? undefined : fields.takenAt;
@@ -386,6 +394,31 @@ export async function batchUpdatePhotoSortOrder(
     const mergedContext = buildCloudinaryContext({
       ...existingContext,
       sort_order: item.sortOrder === null ? undefined : String(item.sortOrder)
+    });
+
+    await cloudinary.api.update(item.publicId, {
+      context: mergedContext,
+      tags: normalizeTags(existing.tags ?? existingContext.tags),
+      resource_type: "image",
+      type: "upload"
+    });
+  }
+}
+
+export async function batchUpdatePhotoFeaturedOrder(
+  items: Array<{ publicId: string; featuredOrder: number | null }>
+): Promise<void> {
+  for (const item of items) {
+    const existing = (await cloudinary.api.resource(item.publicId, {
+      resource_type: "image",
+      context: true,
+      tags: true
+    })) as CloudinaryResource;
+
+    const existingContext = getContextMap(existing);
+    const mergedContext = buildCloudinaryContext({
+      ...existingContext,
+      featured_order: item.featuredOrder === null ? undefined : String(item.featuredOrder)
     });
 
     await cloudinary.api.update(item.publicId, {
