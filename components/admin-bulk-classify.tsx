@@ -20,6 +20,7 @@ export function AdminBulkClassify({ photos }: Props) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [showMobileSheet, setShowMobileSheet] = useState(false);
+  const [showConfirmReplace, setShowConfirmReplace] = useState(false);
 
   function togglePhoto(id: string) {
     setSelectedIds(prev => {
@@ -34,7 +35,7 @@ export function AdminBulkClassify({ photos }: Props) {
   }
 
   function selectAll() {
-    setSelectedIds(new Set(photos.map(p => p.publicId)));
+    setSelectedIds(new Set(filteredPhotos.map(p => p.publicId)));
   }
 
   function deselectAll() {
@@ -65,6 +66,14 @@ export function AdminBulkClassify({ photos }: Props) {
     });
   }
 
+  function handleApplyClick() {
+    if (mode === "replace") {
+      setShowConfirmReplace(true);
+    } else {
+      handleApply();
+    }
+  }
+
   async function handleApply() {
     if (selectedIds.size === 0 || selectedTags.size === 0) return;
 
@@ -72,6 +81,7 @@ export function AdminBulkClassify({ photos }: Props) {
     setError("");
     setSuccess("");
     setShowMobileSheet(false);
+    setShowConfirmReplace(false);
 
     try {
       const response = await fetch("/api/cloudinary/bulk-classify", {
@@ -89,14 +99,12 @@ export function AdminBulkClassify({ photos }: Props) {
       }
 
       const data = await response.json();
-      setSuccess(`Updated ${data.updated} photos`);
-
-      // Reload page to show updated tags
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
-    } catch {
-      setError("Could not update photos. Please try again.");
+      setSuccess(`Updated ${data.updated} photo${data.updated !== 1 ? "s" : ""}. Refresh page to see changes.`);
+    } catch (err) {
+      const errorMessage = err instanceof Error && err.message
+        ? err.message
+        : "Network error. Check your connection and try again.";
+      setError(errorMessage);
     } finally {
       setSaving(false);
     }
@@ -115,24 +123,27 @@ export function AdminBulkClassify({ photos }: Props) {
     <div className={styles.container}>
       {/* Filter Bar */}
       <div className={styles.filterBar}>
-        <div className={styles.filterButtons}>
-          {TAGGED_COLLECTIONS.map(collection => (
-            <button
-              key={collection.slug}
-              type="button"
-              onClick={() => toggleFilterTag(collection.slug)}
-              className={`${styles.filterButton} ${filterTags.has(collection.slug) ? styles.filterButtonActive : ""}`}
-            >
-              {collection.name}
-            </button>
-          ))}
+        <div className={styles.filterSection}>
+          <p className={styles.filterLabel}>Show photos tagged with:</p>
+          <div className={styles.filterButtons}>
+            {TAGGED_COLLECTIONS.map(collection => (
+              <button
+                key={collection.slug}
+                type="button"
+                onClick={() => toggleFilterTag(collection.slug)}
+                className={`${styles.filterButton} ${filterTags.has(collection.slug) ? styles.filterButtonActive : ""}`}
+              >
+                {collection.name}
+              </button>
+            ))}
+          </div>
         </div>
         <span className={styles.photoCount} data-selection={`${selectedIds.size} selected`}>
           {filteredPhotos.length} of {photos.length} photos
         </span>
       </div>
 
-      {/* Action Bar */}
+      {/* Action Bar - Desktop */}
       <div className={styles.actionBar}>
         <div className={styles.selectionGroup}>
           <div className={styles.selectionButtons}>
@@ -192,13 +203,41 @@ export function AdminBulkClassify({ photos }: Props) {
           </div>
           <button
             type="button"
-            onClick={handleApply}
+            onClick={handleApplyClick}
             disabled={!canApply}
             className={`${styles.button} ${styles.buttonPrimary}`}
           >
             {saving ? "Applying..." : "Apply"}
           </button>
         </div>
+      </div>
+
+      {/* Mobile Trigger */}
+      <div className={styles.mobileTrigger}>
+        <button
+          type="button"
+          onClick={selectAll}
+          disabled={filteredPhotos.length === 0}
+          className={styles.button}
+        >
+          Select All
+        </button>
+        <button
+          type="button"
+          onClick={deselectAll}
+          disabled={selectedIds.size === 0}
+          className={styles.button}
+        >
+          Clear
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowMobileSheet(true)}
+          disabled={selectedIds.size === 0}
+          className={`${styles.button} ${styles.buttonPrimary}`}
+        >
+          Tag {selectedIds.size} photo{selectedIds.size !== 1 ? "s" : ""}
+        </button>
       </div>
 
       {/* Mobile Tagging Sheet */}
@@ -262,7 +301,7 @@ export function AdminBulkClassify({ photos }: Props) {
             <div className={styles.sheetFooter}>
               <button
                 type="button"
-                onClick={handleApply}
+                onClick={handleApplyClick}
                 disabled={selectedTags.size === 0 || saving}
                 className={`${styles.button} ${styles.buttonPrimary}`}
               >
@@ -273,16 +312,55 @@ export function AdminBulkClassify({ photos }: Props) {
         </div>
       )}
 
+      {/* Confirm Replace Dialog */}
+      {showConfirmReplace && (
+        <div className={styles.confirmDialog}>
+          <div className={styles.dialogBackdrop} onClick={() => setShowConfirmReplace(false)} />
+          <div className={styles.dialogContent}>
+            <h2 className={styles.dialogTitle}>Replace all collection tags?</h2>
+            <p className={styles.dialogMessage}>
+              This will remove all existing collection tags from {selectedIds.size} photo{selectedIds.size !== 1 ? "s" : ""} and replace them with the tags you selected. You cannot undo this action.
+            </p>
+            <div className={styles.dialogActions}>
+              <button
+                type="button"
+                onClick={() => setShowConfirmReplace(false)}
+                className={styles.button}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleApply}
+                className={`${styles.button} ${styles.buttonDanger}`}
+              >
+                Replace Tags
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Status messages */}
       {success && (
-        <p style={{ color: "oklch(35% 0.05 140)", margin: "1rem 0" }}>{success}</p>
+        <div className={styles.statusMessage} data-type="success">
+          {success}
+        </div>
       )}
       {error && (
-        <p style={{ color: "oklch(45% 0.15 25)", margin: "1rem 0" }}>{error}</p>
+        <div className={styles.statusMessage} data-type="error">
+          {error}
+        </div>
       )}
 
       {/* Photo grid */}
-      <div className={styles.photoGrid}>
+      {filteredPhotos.length === 0 && filterTags.size > 0 ? (
+        <div className={styles.emptyState}>
+          <p className={styles.emptyTitle}>No photos with selected tags</p>
+          <p className={styles.emptyHint}>Clear filters to see all photos</p>
+        </div>
+      ) : (
+        <div className={styles.photoGrid}>
         {filteredPhotos.map(photo => {
           const isSelected = selectedIds.has(photo.publicId);
           return (
@@ -294,9 +372,9 @@ export function AdminBulkClassify({ photos }: Props) {
               <input
                 type="checkbox"
                 checked={isSelected}
-                onChange={() => {}}
+                onChange={() => togglePhoto(photo.publicId)}
                 className={styles.checkbox}
-                onClick={(e) => e.stopPropagation()}
+                aria-label={`Select ${getPhotoTitle(photo)}`}
               />
               <Image
                 src={photo.secureUrl.replace("/upload/", "/upload/w_200,h_200,c_fill,f_auto,q_auto/")}
@@ -320,6 +398,7 @@ export function AdminBulkClassify({ photos }: Props) {
           );
         })}
       </div>
+      )}
     </div>
   );
 }

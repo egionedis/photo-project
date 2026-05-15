@@ -25,7 +25,7 @@ export async function POST(request: Request) {
   const { photoIds, tags, mode } = parsed.data;
 
   // Validate tags against allowed collection tags
-  const allowedTags = new Set(TAGGED_COLLECTIONS.map(c => c.slug));
+  const allowedTags = new Set<string>(TAGGED_COLLECTIONS.map(c => c.slug));
   const validTags = tags.filter(t => allowedTags.has(t));
 
   if (validTags.length === 0) {
@@ -54,8 +54,8 @@ export async function POST(request: Request) {
         publicId,
         title: photo.title || "",
         description: photo.description || "",
-        titleEn: photo.title_en || null,
-        descriptionEn: photo.description_en || null,
+        titleEn: photo.titleEn || null,
+        descriptionEn: photo.descriptionEn || null,
         tags: newTags,
         featured: photo.featured,
         sortOrder: photo.sortOrder,
@@ -65,7 +65,7 @@ export async function POST(request: Request) {
         lensModel: photo.camera?.lens || null,
         focalLength: photo.camera?.focalLength || null,
         aperture: photo.camera?.aperture || null,
-        shutter: photo.camera?.shutterSpeed || null,
+        shutter: photo.camera?.shutter || null,
         iso: photo.camera?.iso || null
       });
     }));
