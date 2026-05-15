@@ -1,9 +1,8 @@
 "use client";
 
-import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from "react";
-import type { Photo } from "@/lib/types";
+import { createContext, ReactNode, useContext, useEffect, useMemo } from "react";
 
-export type SiteLanguage = "pt" | "en";
+export type SiteLanguage = "en";
 
 type LanguageContextValue = {
   language: SiteLanguage;
@@ -29,23 +28,6 @@ type TranslationKey =
   | "unknown";
 
 const translations: Record<SiteLanguage, Record<TranslationKey, string>> = {
-  pt: {
-    about: "Sobre",
-    aboutBody: "Este e um album pessoal onde tento capturar as pessoas, os lugares e os movimentos que acontecem na minha vida.",
-    aboutMe: "Sobre mim",
-    closePhoto: "Fechar fotografia",
-    contact: "Contacto",
-    date: "Data",
-    gallery: "Galeria",
-    language: "Idioma",
-    nextPhoto: "Proxima fotografia",
-    noDescription: "Sem texto.",
-    previousPhoto: "Fotografia anterior",
-    none: "Nenhuma",
-    tags: "Etiquetas",
-    untitled: "Sem titulo",
-    unknown: "Desconhecido"
-  },
   en: {
     about: "About",
     aboutBody: "This is a personal photobook where I try to capture the people, places, and movements that happen in my life.",
@@ -67,32 +49,18 @@ const translations: Record<SiteLanguage, Record<TranslationKey, string>> = {
 
 const LanguageContext = createContext<LanguageContextValue | null>(null);
 
-function getStoredLanguage(): SiteLanguage {
-  if (typeof window === "undefined") {
-    return "pt";
-  }
-  return window.localStorage.getItem("site-language") === "en" ? "en" : "pt";
-}
-
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguageState] = useState<SiteLanguage>("pt");
-
   useEffect(() => {
-    setLanguageState(getStoredLanguage());
+    document.documentElement.lang = "en";
   }, []);
-
-  useEffect(() => {
-    document.documentElement.lang = language;
-    window.localStorage.setItem("site-language", language);
-  }, [language]);
 
   const value = useMemo<LanguageContextValue>(
     () => ({
-      language,
-      setLanguage: setLanguageState,
-      t: (key) => translations[language][key]
+      language: "en",
+      setLanguage: () => undefined,
+      t: (key) => translations.en[key]
     }),
-    [language]
+    []
   );
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
@@ -104,33 +72,4 @@ export function useLanguage() {
     throw new Error("useLanguage must be used inside LanguageProvider");
   }
   return value;
-}
-
-export function getLocalizedPhotoTitle(photo: Photo, language: SiteLanguage): string {
-  if (language === "en") {
-    return photo.titleEn?.trim() || photo.title?.trim() || translations.en.untitled;
-  }
-  return photo.title?.trim() || translations.pt.untitled;
-}
-
-export function getLocalizedPhotoDescription(photo: Photo, language: SiteLanguage): string {
-  if (language === "en") {
-    return photo.descriptionEn?.trim() || photo.description?.trim() || "";
-  }
-  return photo.description?.trim() || "";
-}
-
-export function formatLocalizedDate(value: string | undefined, language: SiteLanguage): string {
-  if (!value) {
-    return translations[language].unknown;
-  }
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) {
-    return value;
-  }
-  return new Intl.DateTimeFormat(language === "pt" ? "pt-PT" : "en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric"
-  }).format(parsed);
 }

@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="pt">
+    <html lang="en">
       <body className={ebGaramond.variable}>
         <LanguageProvider>
           <Header />
