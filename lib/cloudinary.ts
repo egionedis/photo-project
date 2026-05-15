@@ -176,8 +176,13 @@ async function queryGalleryPhotos(): Promise<Photo[]> {
     return snapshot;
   }
 
-  const rebuilt = await rebuildGallerySnapshot();
-  return rebuilt;
+  try {
+    const rebuilt = await rebuildGallerySnapshot();
+    return rebuilt;
+  } catch (error) {
+    console.error("Failed to rebuild gallery snapshot, falling back to direct query.", error);
+    return sortPhotosForGallery(await queryAllPhotosInFolder());
+  }
 }
 
 async function queryAllPhotosInFolder(): Promise<Photo[]> {
@@ -240,12 +245,16 @@ async function writeGallerySnapshot(photos: Photo[]): Promise<void> {
     return;
   }
 
-  await put(GALLERY_SNAPSHOT_PATH, JSON.stringify(photos), {
-    access: "private",
-    addRandomSuffix: false,
-    allowOverwrite: true,
-    contentType: "application/json"
-  });
+  try {
+    await put(GALLERY_SNAPSHOT_PATH, JSON.stringify(photos), {
+      access: "private",
+      addRandomSuffix: false,
+      allowOverwrite: true,
+      contentType: "application/json"
+    });
+  } catch (error) {
+    console.error("Failed to write gallery snapshot to Blob.", error);
+  }
 }
 
 export async function rebuildGallerySnapshot(): Promise<Photo[]> {
