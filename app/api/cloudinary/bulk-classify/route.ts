@@ -32,8 +32,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "No valid tags provided" }, { status: 400 });
   }
 
-  // Fetch all photos to get current state
-  const photos = await getGalleryPhotos();
+  // Fetch all photos directly from Cloudinary (bypass cache)
+  const photos = await rebuildGallerySnapshot();
 
   // Process in chunks of 25
   for (let i = 0; i < photoIds.length; i += 25) {
@@ -71,11 +71,14 @@ export async function POST(request: Request) {
     }));
   }
 
-  // Rebuild gallery snapshot
+  // Rebuild gallery snapshot again to pick up tag changes
   await rebuildGallerySnapshot();
 
-  // Revalidate collection pages
+  // Revalidate all affected pages
+  revalidatePath("/");
+  revalidatePath("/gallery");
   revalidatePath("/collections");
+  revalidatePath("/admin/classify");
   TAGGED_COLLECTIONS.forEach(collection => {
     revalidatePath(`/collections/${collection.slug}`);
   });
