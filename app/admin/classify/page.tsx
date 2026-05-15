@@ -7,6 +7,9 @@ import { AdminRebuildButton } from "@/components/admin-rebuild-button";
 import { getGalleryPhotos } from "@/lib/cloudinary";
 import styles from "../admin.module.css";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function AdminClassifyPage() {
   const cookieStore = await cookies();
   const session = cookieStore.get("admin_session");
