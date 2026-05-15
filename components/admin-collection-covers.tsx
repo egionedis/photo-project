@@ -22,14 +22,14 @@ export function AdminCollectionCovers({ collections, allPhotos }: Props) {
     collections[0]?.slug || null
   );
   const [localCovers, setLocalCovers] = useState<Record<string, string | null>>(
-    Object.fromEntries(collections.map(c => [c.slug, c.currentCoverId]))
+    Object.fromEntries(collections.map(c => [c.slug, c.currentCoverId ?? null]))
   );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
   const activeCollection = collections.find(c => c.slug === selectedCollection);
-  const currentCoverId = selectedCollection ? localCovers[selectedCollection] : null;
+  const currentCoverId = selectedCollection ? (localCovers[selectedCollection] ?? null) : null;
 
   async function handleSelectCover(photoId: string) {
     if (!selectedCollection) return;
