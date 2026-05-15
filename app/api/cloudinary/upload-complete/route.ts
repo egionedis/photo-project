@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getAdminSessionFromCookies, isValidAdminSessionToken } from "@/lib/auth";
 import { rebuildGallerySnapshot } from "@/lib/cloudinary";
+import { COLLECTION_REVALIDATE_PATHS } from "@/lib/collections";
 
 const schema = z.object({
   publicId: z.string().min(1)
@@ -29,7 +30,9 @@ export async function POST(request: Request) {
   const { publicId } = parsed.data;
   await rebuildGallerySnapshot();
 
-  revalidatePath("/gallery");
+  for (const path of COLLECTION_REVALIDATE_PATHS) {
+    revalidatePath(path);
+  }
   revalidatePath("/admin/upload");
   revalidatePath(toPhotoPath(publicId));
 
