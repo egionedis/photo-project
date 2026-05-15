@@ -1,6 +1,6 @@
 import type { Photo } from "@/lib/types";
 
-export type CollectionSlug = "all" | "travel" | "life" | "architecture" | "street";
+export type CollectionSlug = "all" | "travel" | "life" | "architecture" | "nature" | "objects";
 
 export type CollectionDefinition = {
   slug: CollectionSlug;
@@ -30,9 +30,14 @@ const COLLECTION_DEFINITIONS: CollectionDefinition[] = [
     description: "Lines, buildings, structures, and urban forms."
   },
   {
-    slug: "street",
-    name: "Street",
-    description: "Public spaces, movement, and unscripted moments."
+    slug: "nature",
+    name: "Nature",
+    description: "Landscapes, flora, natural light, and organic forms."
+  },
+  {
+    slug: "objects",
+    name: "Objects",
+    description: "Still life, details, textures, and composed arrangements."
   }
 ];
 
@@ -47,7 +52,8 @@ export const COLLECTION_REVALIDATE_PATHS = [
   "/collections/travel",
   "/collections/life",
   "/collections/architecture",
-  "/collections/street",
+  "/collections/nature",
+  "/collections/objects",
   "/gallery"
 ] as const;
 

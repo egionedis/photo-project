@@ -21,7 +21,8 @@ const TITLE_BY_SLUG: Record<CollectionSlug, string> = {
   travel: "Travel",
   life: "Life",
   architecture: "Architecture",
-  street: "Street"
+  nature: "Nature",
+  objects: "Objects"
 };
 
 export const revalidate = 60;

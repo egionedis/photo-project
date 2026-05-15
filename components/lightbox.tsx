@@ -104,6 +104,16 @@ export function Lightbox({ photos, currentIndex, isOpen, onClose, onPrevious, on
           return;
         }
 
+        // Check if image is zoomed (browser zoom via pinch)
+        const imgElement = event.currentTarget.querySelector('img');
+        if (imgElement) {
+          const rect = imgElement.getBoundingClientRect();
+          const isZoomed = rect.width > window.innerWidth || rect.height > window.innerHeight;
+          if (isZoomed) {
+            return;
+          }
+        }
+
         if (deltaX < 0) {
           onNext();
         } else {
