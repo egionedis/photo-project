@@ -3,21 +3,17 @@
 import Image from "next/image";
 import type { Photo } from "@/lib/types";
 import { getPhotoDisplayDateValue } from "@/lib/photo-date";
-import {
-  formatLocalizedDate,
-  getLocalizedPhotoDescription,
-  getLocalizedPhotoTitle,
-  useLanguage
-} from "@/components/language-provider";
+import { useLanguage } from "@/components/language-provider";
+import { formatPortfolioDate, getPhotoDescription, getPhotoTitle } from "@/lib/photo-text";
 
 type PhotoDetailClientProps = {
   photo: Photo;
 };
 
 export function PhotoDetailClient({ photo }: PhotoDetailClientProps) {
-  const { language, t } = useLanguage();
-  const title = getLocalizedPhotoTitle(photo, language);
-  const description = getLocalizedPhotoDescription(photo, language) || t("noDescription");
+  const { t } = useLanguage();
+  const title = getPhotoTitle(photo);
+  const description = getPhotoDescription(photo) || t("noDescription");
 
   return (
     <article className="stack" style={{ gap: "1.2rem" }}>
@@ -35,7 +31,7 @@ export function PhotoDetailClient({ photo }: PhotoDetailClientProps) {
       <div className="card" style={{ padding: "1rem" }}>
         <p style={{ marginTop: 0 }}>{description}</p>
         <p>
-          <strong>{t("date")}:</strong> {formatLocalizedDate(getPhotoDisplayDateValue(photo), language)}
+          <strong>{t("date")}:</strong> {formatPortfolioDate(getPhotoDisplayDateValue(photo))}
         </p>
         <p style={{ marginBottom: 0 }}>
           <strong>{t("tags")}:</strong> {photo.tags.length ? photo.tags.join(", ") : t("none")}
