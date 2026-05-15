@@ -1,4 +1,5 @@
 import type { Photo } from "@/lib/types";
+import { readCollectionMetadata } from "@/lib/collection-metadata";
 
 export type CollectionSlug = "all" | "travel" | "life" | "architecture" | "nature" | "objects";
 
@@ -73,7 +74,19 @@ export function filterPhotosByCollection(photos: Photo[], slug: CollectionSlug):
   return photos.filter((photo) => photo.tags.includes(slug));
 }
 
-export function getCollectionCoverPhoto(photos: Photo[], slug: CollectionSlug): Photo | undefined {
+export async function getCollectionCoverPhoto(photos: Photo[], slug: CollectionSlug): Promise<Photo | undefined> {
+  // Check for custom cover photo
+  const metadata = await readCollectionMetadata();
+  const customCoverId = metadata[slug]?.coverPhotoId;
+
+  if (customCoverId) {
+    const customPhoto = photos.find(p => p.publicId === customCoverId);
+    if (customPhoto) {
+      return customPhoto;
+    }
+  }
+
+  // Fall back to first photo logic
   if (slug === "all") {
     return getFeaturedPhotos(photos)[0] || photos[0];
   }

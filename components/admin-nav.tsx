@@ -2,7 +2,7 @@ import Link from "next/link";
 import styles from "../app/admin/admin.module.css";
 
 type AdminNavProps = {
-  current: "upload" | "edit" | "order" | "featured";
+  current: "upload" | "edit" | "order" | "featured" | "covers";
 };
 
 export function AdminNav({ current }: AdminNavProps) {
@@ -31,6 +31,12 @@ export function AdminNav({ current }: AdminNavProps) {
         href="/admin/featured"
       >
         Featured
+      </Link>
+      <Link
+        className={`${styles.navLink} ${current === "covers" ? styles.active : ""}`}
+        href="/admin/covers"
+      >
+        Covers
       </Link>
     </nav>
   );

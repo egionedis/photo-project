@@ -45,8 +45,8 @@ export default async function CollectionsPage() {
       </div>
 
       <div className={styles.grid}>
-        {collections.map((collection) => {
-          const coverPhoto = getCollectionCoverPhoto(photos, collection.slug);
+        {await Promise.all(collections.map(async (collection) => {
+          const coverPhoto = await getCollectionCoverPhoto(photos, collection.slug);
 
           return (
             <Link key={collection.slug} href={`/collections/${collection.slug}`} className={styles.tile}>
@@ -70,7 +70,7 @@ export default async function CollectionsPage() {
               )}
             </Link>
           );
-        })}
+        }))}
       </div>
     </section>
   );
