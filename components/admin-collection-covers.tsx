@@ -152,10 +152,11 @@ export function AdminCollectionCovers({ collections, allPhotos }: Props) {
                   borderRadius: "8px",
                   overflow: "hidden",
                   border: isCurrent
-                    ? "3px solid var(--accent)"
+                    ? "3px solid oklch(60% 0.12 145)"
                     : "1px solid var(--line)",
                   opacity: saving ? 0.5 : 1,
-                  transition: "all 180ms cubic-bezier(0.2, 0.8, 0.2, 1)"
+                  transition: "all 180ms cubic-bezier(0.2, 0.8, 0.2, 1)",
+                  boxShadow: isCurrent ? "0 0 0 1px oklch(60% 0.12 145)" : "none"
                 }}
               >
                 <Image
