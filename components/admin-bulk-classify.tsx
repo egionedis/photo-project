@@ -101,10 +101,10 @@ export function AdminBulkClassify({ photos }: Props) {
       const data = await response.json();
       setSuccess(`Updated ${data.updated} photo${data.updated !== 1 ? "s" : ""}`);
 
-      // Auto-reload to show updated tags
+      // Auto-reload to show updated tags (delay for blob write propagation)
       setTimeout(() => {
         window.location.reload();
-      }, 800);
+      }, 1500);
     } catch (err) {
       const errorMessage = err instanceof Error && err.message
         ? err.message
