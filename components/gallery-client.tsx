@@ -4,19 +4,13 @@ import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { Photo } from "@/lib/types";
+import { buildPhotoDetailPath } from "@/lib/urls";
 
 type GalleryClientProps = {
   photos: Photo[];
 };
 
 export function GalleryClient({ photos }: GalleryClientProps) {
-  function toPhotoHref(publicId: string): string {
-    return `/photo/${publicId
-      .split("/")
-      .map((segment) => encodeURIComponent(segment))
-      .join("/")}`;
-  }
-
   const allTags = useMemo(() => {
     const set = new Set<string>();
     for (const photo of photos) {
@@ -71,7 +65,7 @@ export function GalleryClient({ photos }: GalleryClientProps) {
           <Link
             key={photo.publicId}
             className="card"
-            href={toPhotoHref(photo.publicId)}
+            href={buildPhotoDetailPath(photo.publicId)}
             style={{ overflow: "hidden", display: "block" }}
           >
             <Image

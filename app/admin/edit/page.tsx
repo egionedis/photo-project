@@ -2,7 +2,7 @@ import { AdminEditPhotos } from "@/components/admin-edit-photos";
 import { AdminLogoutButton } from "@/components/admin-logout-button";
 import { AdminNav } from "@/components/admin-nav";
 import { isAdminAuthenticated } from "@/lib/auth";
-import { getGalleryPhotos } from "@/lib/cloudinary";
+import { getGalleryPhotos } from "@/lib/snapshot-cache";
 import { redirect } from "next/navigation";
 import styles from "../admin.module.css";
 

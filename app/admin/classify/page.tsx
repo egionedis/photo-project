@@ -4,7 +4,7 @@ import { AdminNav } from "@/components/admin-nav";
 import { AdminLogoutButton } from "@/components/admin-logout-button";
 import { AdminBulkClassify } from "@/components/admin-bulk-classify";
 import { AdminRebuildButton } from "@/components/admin-rebuild-button";
-import { getGalleryPhotos } from "@/lib/cloudinary";
+import { getGalleryPhotos } from "@/lib/snapshot-cache";
 import styles from "../admin.module.css";
 
 export const dynamic = "force-dynamic";

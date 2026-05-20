@@ -1,17 +1,10 @@
 import { NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getAdminSessionFromCookies, isValidAdminSessionToken } from "@/lib/auth";
-import { rebuildGallerySnapshot, updatePhotoMetadata } from "@/lib/cloudinary";
-import { COLLECTION_REVALIDATE_PATHS, TAGGED_COLLECTIONS } from "@/lib/collections";
-
-function normalizeCollectionTags(input: string): string[] {
-  const allowedTags = new Set(TAGGED_COLLECTIONS.map((collection) => collection.slug));
-  return input
-    .split(",")
-    .map((tag) => tag.trim().toLowerCase())
-    .filter((tag, index, tags) => tag && allowedTags.has(tag as (typeof TAGGED_COLLECTIONS)[number]["slug"]) && tags.indexOf(tag) === index);
-}
+import { updatePhotoMetadata } from "@/lib/cloudinary-client";
+import { rebuildGallerySnapshot } from "@/lib/snapshot-cache";
+import { validateCollectionTags } from "@/lib/collections";
+import { revalidateAfterPhotoMutation } from "@/lib/revalidation";
 
 const schema = z.object({
   publicId: z.string().min(1),
@@ -33,13 +26,6 @@ const schema = z.object({
   iso: z.string().optional()
 });
 
-function toPhotoPath(publicId: string): string {
-  return `/photo/${publicId
-    .split("/")
-    .map((segment) => encodeURIComponent(segment))
-    .join("/")}`;
-}
-
 export async function POST(request: Request) {
   const token = await getAdminSessionFromCookies();
   if (!token || !isValidAdminSessionToken(token)) {
@@ -58,7 +44,7 @@ export async function POST(request: Request) {
     description: data.description.trim(),
     titleEn: data.titleEn !== undefined ? (data.titleEn.trim() || null) : undefined,
     descriptionEn: data.descriptionEn !== undefined ? (data.descriptionEn.trim() || null) : undefined,
-    tags: data.tags !== undefined ? normalizeCollectionTags(data.tags) : undefined,
+    tags: data.tags !== undefined ? validateCollectionTags(data.tags.split(",")) : undefined,
     featured: data.featured,
     sortOrder: data.sortOrder,
     featuredOrder: data.featured === false ? null : data.featuredOrder,
@@ -73,13 +59,10 @@ export async function POST(request: Request) {
   });
   await rebuildGallerySnapshot();
 
-  for (const path of COLLECTION_REVALIDATE_PATHS) {
-    revalidatePath(path);
-  }
-  revalidatePath(toPhotoPath(data.publicId));
-  revalidatePath("/admin/edit");
-  revalidatePath("/admin/featured");
-  revalidatePath("/");
+  revalidateAfterPhotoMutation({
+    publicId: data.publicId,
+    mutationType: "update"
+  });
 
   return NextResponse.json({ ok: true });
 }

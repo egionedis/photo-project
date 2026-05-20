@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { getAdminSessionFromCookies, isValidAdminSessionToken } from "@/lib/auth";
-import { rebuildGallerySnapshot } from "@/lib/cloudinary";
+import { rebuildGallerySnapshot } from "@/lib/snapshot-cache";
 import { TAGGED_COLLECTIONS } from "@/lib/collections";
 
 export async function POST() {

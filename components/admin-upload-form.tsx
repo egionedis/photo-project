@@ -6,6 +6,7 @@ import Image from "next/image";
 import { buildCloudinaryContext } from "@/lib/metadata";
 import exifr from "exifr";
 import { TAGGED_COLLECTIONS } from "@/lib/collections";
+import { buildPhotoDetailPath } from "@/lib/urls";
 import styles from "../app/admin/admin.module.css";
 
 type SignatureResponse = {
@@ -143,13 +144,6 @@ function formatTakenAt(value: string | null): string {
     dateStyle: "medium",
     timeStyle: "short"
   }).format(date);
-}
-
-function toPhotoHref(publicId: string): string {
-  return `/photo/${publicId
-    .split("/")
-    .map((segment) => encodeURIComponent(segment))
-    .join("/")}`;
 }
 
 function formatShutter(value: number | string | undefined): string | undefined {
@@ -474,7 +468,7 @@ export function AdminUploadForm() {
 
       setSuccess({
         publicId: uploaded.public_id,
-        href: toPhotoHref(uploaded.public_id)
+        href: buildPhotoDetailPath(uploaded.public_id)
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Upload failed. Verify session and Cloudinary credentials.";

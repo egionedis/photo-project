@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getAdminSessionFromCookies, isValidAdminSessionToken } from "@/lib/auth";
-import { batchUpdatePhotoFeaturedOrder, rebuildGallerySnapshot } from "@/lib/cloudinary";
+import { batchUpdatePhotoFeaturedOrder } from "@/lib/cloudinary-client";
+import { rebuildGallerySnapshot } from "@/lib/snapshot-cache";
 import { COLLECTION_REVALIDATE_PATHS } from "@/lib/collections";
 
 const itemSchema = z.object({

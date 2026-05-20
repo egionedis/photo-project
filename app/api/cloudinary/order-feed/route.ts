@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getAdminSessionFromCookies, isValidAdminSessionToken } from "@/lib/auth";
-import { searchPhotosForAdminOrder } from "@/lib/cloudinary";
+import { searchPhotosForAdminOrder } from "@/lib/snapshot-cache";
 
 const schema = z.object({
   query: z.string().optional().default(""),

@@ -67,9 +67,12 @@ CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
 ADMIN_PASSWORD=your_strong_password
+# Optional, local dev only: allow corporate/self-signed TLS interception
+# ALLOW_SELF_SIGNED_TLS=true
 ```
 
 `CLOUDINARY_API_SECRET` remains server-only and is never exposed to the client.
+Only enable `ALLOW_SELF_SIGNED_TLS` on a trusted local machine when your network injects a self-signed certificate.
 
 ## Local Development
 

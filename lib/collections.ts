@@ -74,6 +74,25 @@ export function filterPhotosByCollection(photos: Photo[], slug: CollectionSlug):
   return photos.filter((photo) => photo.tags.includes(slug));
 }
 
+/**
+ * Validate and normalize collection tags.
+ * Filters to only allowed collection slugs, normalizes case/whitespace, deduplicates.
+ *
+ * @example
+ * validateCollectionTags(["Travel", "unknown", "life"]) → ["travel", "life"]
+ * validateCollectionTags(["travel", "travel"]) → ["travel"]
+ */
+export function validateCollectionTags(tags: string[]): string[] {
+  const allowedTags = new Set(TAGGED_COLLECTIONS.map(c => c.slug));
+  return tags
+    .map(tag => tag.trim().toLowerCase())
+    .filter((tag, index, arr) =>
+      tag &&
+      allowedTags.has(tag as Exclude<CollectionSlug, "all">) &&
+      arr.indexOf(tag) === index // deduplicate
+    );
+}
+
 export async function getCollectionCoverPhoto(photos: Photo[], slug: CollectionSlug): Promise<Photo | undefined> {
   // Check for custom cover photo
   const metadata = await readCollectionMetadata();

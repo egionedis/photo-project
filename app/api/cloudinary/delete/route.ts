@@ -1,20 +1,13 @@
 import { NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getAdminSessionFromCookies, isValidAdminSessionToken } from "@/lib/auth";
-import { deletePhotoByPublicId, rebuildGallerySnapshot } from "@/lib/cloudinary";
-import { COLLECTION_REVALIDATE_PATHS } from "@/lib/collections";
+import { deletePhotoByPublicId } from "@/lib/cloudinary-client";
+import { rebuildGallerySnapshot } from "@/lib/snapshot-cache";
+import { revalidateAfterPhotoMutation } from "@/lib/revalidation";
 
 const schema = z.object({
   publicId: z.string().min(1)
 });
-
-function toPhotoPath(publicId: string): string {
-  return `/photo/${publicId
-    .split("/")
-    .map((segment) => encodeURIComponent(segment))
-    .join("/")}`;
-}
 
 export async function POST(request: Request) {
   const token = await getAdminSessionFromCookies();
@@ -31,11 +24,10 @@ export async function POST(request: Request) {
   await deletePhotoByPublicId(publicId);
   await rebuildGallerySnapshot();
 
-  for (const path of COLLECTION_REVALIDATE_PATHS) {
-    revalidatePath(path);
-  }
-  revalidatePath("/admin/edit");
-  revalidatePath(toPhotoPath(publicId));
+  revalidateAfterPhotoMutation({
+    publicId,
+    mutationType: "delete"
+  });
 
   return NextResponse.json({ ok: true });
 }

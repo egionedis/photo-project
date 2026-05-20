@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getGalleryPhotos } from "@/lib/cloudinary";
+import { getGalleryPhotos } from "@/lib/snapshot-cache";
 import { JustifiedGallery } from "@/components/JustifiedGallery";
 
 export const revalidate = 60;

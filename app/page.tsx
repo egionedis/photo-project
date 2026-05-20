@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getGalleryPhotos } from "@/lib/cloudinary";
+import { getGalleryPhotos } from "@/lib/snapshot-cache";
 import { getFeaturedPhotos } from "@/lib/collections";
 import { HomeGallery } from "@/components/home-gallery";
 import styles from "./page.module.css";

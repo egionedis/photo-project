@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getAdminSessionFromCookies, isValidAdminSessionToken } from "@/lib/auth";
-import { getGalleryPhotos, rebuildGallerySnapshot, updatePhotoMetadata } from "@/lib/cloudinary";
-import { TAGGED_COLLECTIONS } from "@/lib/collections";
+import { updatePhotoMetadata } from "@/lib/cloudinary-client";
+import { rebuildGallerySnapshot } from "@/lib/snapshot-cache";
+import { validateCollectionTags } from "@/lib/collections";
+import { revalidateAfterPhotoMutation } from "@/lib/revalidation";
 
 const schema = z.object({
   photoIds: z.array(z.string()),
@@ -25,8 +26,7 @@ export async function POST(request: Request) {
   const { photoIds, tags, mode } = parsed.data;
 
   // Validate tags against allowed collection tags
-  const allowedTags = new Set<string>(TAGGED_COLLECTIONS.map(c => c.slug));
-  const validTags = tags.filter(t => allowedTags.has(t));
+  const validTags = validateCollectionTags(tags);
 
   if (validTags.length === 0) {
     return NextResponse.json({ error: "No valid tags provided" }, { status: 400 });
@@ -74,13 +74,9 @@ export async function POST(request: Request) {
   // Rebuild gallery snapshot again to pick up tag changes
   await rebuildGallerySnapshot();
 
-  // Revalidate all affected pages
-  revalidatePath("/");
-  revalidatePath("/gallery");
-  revalidatePath("/collections");
-  revalidatePath("/admin/classify");
-  TAGGED_COLLECTIONS.forEach(collection => {
-    revalidatePath(`/collections/${collection.slug}`);
+  revalidateAfterPhotoMutation({
+    collectionsAffected: validTags,
+    mutationType: "update"
   });
 
   return NextResponse.json({ ok: true, updated: photoIds.length });

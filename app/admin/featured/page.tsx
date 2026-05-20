@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { AdminNav } from "@/components/admin-nav";
 import { AdminLogoutButton } from "@/components/admin-logout-button";
 import { AdminFeaturedPhotos } from "@/components/admin-featured-photos";
-import { getGalleryPhotos } from "@/lib/cloudinary";
+import { getGalleryPhotos } from "@/lib/snapshot-cache";
 import { getFeaturedPhotos } from "@/lib/collections";
 import styles from "../admin.module.css";
 

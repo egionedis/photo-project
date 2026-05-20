@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getAdminSessionFromCookies, isValidAdminSessionToken } from "@/lib/auth";
-import { cloudinaryConstants, createUploadSignature } from "@/lib/cloudinary";
+import { cloudinaryConstants, createUploadSignature } from "@/lib/cloudinary-client";
 import { buildCloudinaryContext } from "@/lib/metadata";
 
 const schema = z.object({

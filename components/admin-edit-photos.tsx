@@ -7,6 +7,7 @@ import type { Photo } from "@/lib/types";
 import { formatPhotoDate, getPhotoDisplayDateValue } from "@/lib/photo-date";
 import { TAGGED_COLLECTIONS } from "@/lib/collections";
 import { getPhotoDescription, getPhotoTitle } from "@/lib/photo-text";
+import { buildPhotoDetailPath } from "@/lib/urls";
 import styles from "../app/admin/admin.module.css";
 
 type AdminEditPhotosProps = {
@@ -56,13 +57,6 @@ function getCameraRows(photo: Photo): Array<{ label: string; value: string }> {
   ];
 
   return rows.filter((row): row is { label: string; value: string } => Boolean(row.value));
-}
-
-function toPhotoHref(publicId: string): string {
-  return `/photo/${publicId
-    .split("/")
-    .map((segment) => encodeURIComponent(segment))
-    .join("/")}`;
 }
 
 function getSidebarThumbnail(url: string): string {

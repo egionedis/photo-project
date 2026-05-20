@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { JustifiedGallery } from "@/components/JustifiedGallery";
-import { getGalleryPhotos } from "@/lib/cloudinary";
+import { getGalleryPhotos } from "@/lib/snapshot-cache";
 import {
   filterPhotosByCollection,
   getCollectionDefinition,
